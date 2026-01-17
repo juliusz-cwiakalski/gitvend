@@ -8,16 +8,27 @@ Vendoring selected files and folders from remote Git repositories—**determinis
 
 ## Why gitvend
 
-When a change spans multiple repositories, shared artifacts tend to drift:
+When you work across multiple repositories (e.g., a microservices platform), you often need *the same shared knowledge* available locally in each repo so work can proceed quickly and safely.
+
+This becomes critical when using AI coding agents: the agent can only act on what it can read in the current repository. If important context lives elsewhere (API contracts, architecture docs, schemas), the agent either operates with incomplete knowledge or you end up copying files around by hand.
+
+Common pain points:
 - API contracts in one repo silently diverge from consumers.
-- Central documentation becomes outdated.
+- Central platform documentation becomes outdated relative to services.
+- Service repos miss architecture guidance that lives in a central docs repo.
 - CI pipelines waste time and bandwidth repeatedly cloning the same dependencies.
 
 `gitvend` addresses this by:
 - Maintaining local **bare mirrors** of upstream repositories.
 - Using a manifest to **selectively vendor** specific files/folders into your repo.
+- Keeping the relevant cross-repo knowledge **in-repo** (committed outputs) so both humans and AI agents can use it.
 - Resolving refs in a **branch-aware** way (prefer same branch name as the current target repo; configurable fallback), while making fallback behavior explicit.
 - Producing **lock/report** artifacts so CI can enforce **determinism** and prevent drift.
+
+Examples:
+- A web app vendors OpenAPI/JSON Schema contracts from backend service repositories.
+- Microservices vendor platform architecture guidance from a central documentation repository.
+- A central platform docs repo vendors selected runbooks/ADRs from individual microservices.
 
 ---
 
