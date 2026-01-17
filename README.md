@@ -16,7 +16,7 @@ When a change spans multiple repositories, shared artifacts tend to drift:
 `gitvend` addresses this by:
 - Maintaining local **bare mirrors** of upstream repositories.
 - Using a manifest to **selectively vendor** specific files/folders into your repo.
-- Resolving refs in a **branch-aware** way (same-branch if present), while making fallback behavior explicit.
+- Resolving refs in a **branch-aware** way (prefer same branch name as the current target repo; configurable fallback), while making fallback behavior explicit.
 - Producing **lock/report** artifacts so CI can enforce **determinism** and prevent drift.
 
 ---
@@ -27,6 +27,7 @@ When a change spans multiple repositories, shared artifacts tend to drift:
 - **Repository update locking** to prevent concurrent mirror corruption.
 - **Manifest-driven selective sync** of files and folders (recursive) from Git sources.
 - **Branch-aware ref resolution** (prefer a branch matching your current workspace branch; configurable fallbacks).
+- **Portable directory vendoring** via `git archive --format=zip` + unzip (no working tree required; avoids OS-specific `tar` quirks).
 - **Deterministic CI** via a lockfile with resolved commit SHAs.
 - **Drift detection** via `gitvend check`.
 - **Provenance** for vendored outputs (source repo/ref/SHA/path).
@@ -57,9 +58,10 @@ When a change spans multiple repositories, shared artifacts tend to drift:
 
 Choose one of the following approaches (depending on how you ship gitvend):
 
-### Option A — Download a release binary
-- Download the correct binary for your OS/arch from GitHub Releases.
-- Put it on your `PATH`.
+### Option A — Download a release (JAR + wrappers)
+- Download the versioned `gitvend-<version>.jar` and the wrapper scripts (`gitvend` for macOS/Linux, `gitvend.cmd` for Windows).
+- Ensure Java is available (`java` on `PATH` or `JAVA_HOME` set). Java 21+ is recommended.
+- Put the wrapper on your `PATH`.
 
 ### Option B — Build from source
 - Clone this repository.
@@ -122,6 +124,8 @@ entries:
 ```
 
 Notes:
+- By default, gitvend attempts to resolve sources using the **current branch name** of the target repo. If the same branch exists in the source repo, gitvend uses it.
+- Fallback behavior is controlled by `ref.policy` (e.g., fallback to `main`, or fail if the branch is required).
 - `policy: same-branch-else-fail` is recommended when the change *must* include a matching branch in the source.
 - `policy: same-branch-else-main` is acceptable for optional dependencies but should still be visible in reports.
 
