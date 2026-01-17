@@ -34,7 +34,7 @@ Existing Git mechanisms do not fully address this need:
 gitvend must enable a workflow where:
 
 1. A target repository declares a **manifest** of external artifacts to vendor.
-2. gitvend obtains those artifacts from a **deterministically resolved source revision**, preferably matching the target repo’s current branch name.
+2. gitvend obtains those artifacts from a **deterministically resolved source revision**, preferably matching the target repo’s current branch name (and otherwise using a configured default branch).
 3. Vendored outputs are:
    - reproducible in CI,
    - reviewable in Git diffs,
@@ -77,7 +77,7 @@ gitvend must enable a workflow where:
   - OpenAPI definitions,
   - JSON Schema,
   - protobuf/IDL files.
-- During feature work, if the consumer is on branch `feature/X`, gitvend first tries to pull from `feature/X` in the source repo; if not present, it falls back to a configured main/default branch.
+- During feature work, if the consumer is on branch `feature/X`, gitvend first tries to pull from `feature/X` in the source repo; if not present, it falls back to a configured default branch for that repo (typically `main`, but e.g. `master` for legacy repos).
 
 ### Use case C — Platform assembly / curated view
 - A platform repo vendors a curated set of artifacts from many repos (docs, schemas, templates).
@@ -103,7 +103,7 @@ gitvend intentionally does **not** aim to:
 - **Selective vendoring** works for files and directories.
 - **Branch-aware resolution** works:
   - same-branch-first (target branch name),
-  - configurable fallback (e.g., main),
+  - configurable fallback to a per-repo default branch (e.g., `main` by default; `master` for legacy repos),
   - and explicit failure modes.
 - **Deterministic CI** supported via lockfile and `gitvend check`.
 - **Mirror cache** reduces repeated network usage.
@@ -139,14 +139,33 @@ gitvend intentionally does **not** aim to:
 - v1 distribution target: **fat JAR + thin wrappers** (with Java 21+ recommended).
 - Prefer extraction mechanisms that avoid OS-specific tooling differences (e.g., directory vendoring via `git archive --format=zip` + unzip).
 
+### Locking and parallelism
+- Mirror updates must be protected by a **per-repository lock**, allowing different repositories to update in parallel.
+- Default layout uses:
+  - `${HOME}/.gitvend/mirrors/<mirror>.git` (bare mirror)
+  - `${HOME}/.gitvend/mirrors/<mirror>.lock` (mirror update lock)
+- Locking must work reliably across Windows/macOS/Linux.
+- Lock metadata should support troubleshooting by recording:
+  - lock acquisition timestamp
+  - owning PID (when available/meaningful)
+
+### Manifest format and future extensibility
+- v1 manifests are **YAML**.
+- The internal manifest DTO/model should be designed so that additional serialization formats (e.g., JSON) can be added in the future without changing core behavior.
+
+### LFS behavior
+- LFS content may remain as **pointer files** (no implicit fetching of LFS objects in v1).
+
+---
+
+## Final decisions
+
+- Mirror lock file: `${HOME}/.gitvend/mirrors/<mirror>.lock`
+- Repository lockfile name (determinism): `gitvend.lock`
+
 ---
 
 ## Open questions (explicitly tracked)
 
-These are not blockers for writing specs, but must be decided before implementation finalization:
-
-1. Lockfile naming: `gitvend.lock` vs `sync.lock`.
-2. Manifest format: YAML (default) vs JSON/TOML.
-3. Default fallback branch name: `main` vs repo default branch detection.
-4. LFS behavior: treat LFS pointers as content vs optionally fetching LFS objects.
+None for PRD scope. Any additional open questions should be tracked in `docs/requirements.md` once that document is created.
 
