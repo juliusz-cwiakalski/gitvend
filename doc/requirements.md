@@ -2,12 +2,13 @@
 
 This document defines functional requirements (FR) and non-functional requirements (NFR) for **gitvend**.
 
-The scope is aligned with `docs/prd.md` and the current decisions:
+The scope is aligned with `doc/prd.md` and the current decisions:
 - Mirror base directory: `${HOME}/.gitvend/`
 - Per-mirror lock file: `${HOME}/.gitvend/mirrors/<mirror>.lock`
 - Determinism lockfile name in target repos: `gitvend.lock`
 - Manifests: YAML v1
-- Ref resolution: same-branch-first, fallback to per-repo configured default branch (`main` by default; legacy repos may specify `master`)
+- Ref resolution: same-branch-first, fallback to per-source configured default branch (`main` by default; legacy repos may specify `master`)
+  - Default is configured on Source and can be overridden per Entry.
 - Directory vendoring: `git archive --format=zip` + unzip
 - LFS: treated as pointer files (no implicit fetching)
 - Git must be present on `PATH`
@@ -20,7 +21,7 @@ The scope is aligned with `docs/prd.md` and the current decisions:
 
 **FR-001 — Mirror home directory**
 - gitvend MUST store its local cache under `${HOME}/.gitvend/` by default.
-- gitvend SHOULD support overriding this location via configuration (exact mechanism defined in `docs/cli-spec.md` and `docs/manifest-spec.md`).
+- gitvend SHOULD support overriding this location via configuration (exact mechanism defined in `doc/cli-spec.md` and `doc/manifest-spec.md`).
 
 **FR-002 — Mirror storage structure**
 - gitvend MUST store bare mirrors under `${HOME}/.gitvend/mirrors/`.
@@ -30,7 +31,7 @@ The scope is aligned with `docs/prd.md` and the current decisions:
 **FR-003 — Stable mirror identity**
 - gitvend MUST compute a stable mirror identifier `<mirror>` from the remote repository URL.
 - The identifier MUST be stable across runs and environments.
-- The mapping algorithm MUST be deterministic, human-readable, and based on a filesystem-safe slug derived from the repository URL.
+- The mapping algorithm MUST be deterministic, human-readable, and based on a filesystem-safe slug derived from a normalized repository URL (e.g., remove protocol, normalize separators, remove trailing slashes).
 
 **FR-004 — Mirror initialization**
 - If a mirror does not exist locally, gitvend MUST initialize it from the remote repository.
@@ -62,9 +63,11 @@ The scope is aligned with `docs/prd.md` and the current decisions:
 - Updates to different mirrors SHOULD be allowed to proceed in parallel.
 - Locking MUST be scoped such that only the same `<mirror>` blocks itself.
 
-**FR-010 — Workspace write safety (serialization)**
-- gitvend SHOULD prevent concurrent writes within the same target repository workspace that could race on output paths.
-- The mechanism (workspace-level lock or equivalent) MUST be defined and implemented to ensure safe concurrent usage.
+**FR-010 — Workspace write safety (repo-level lock)**
+- gitvend MUST prevent concurrent writes within the same target repository workspace that could race on output paths.
+- The mechanism MUST be a repo-level lock file created next to the manifest file being used.
+- The lock file MUST be added to the target repository `.gitignore` automatically (if possible).
+- The exact lock filename and lock metadata format MUST be defined in `doc/storage-and-locking.md`.
 
 ### Manifest-driven vendoring
 
@@ -80,6 +83,7 @@ The scope is aligned with `docs/prd.md` and the current decisions:
   - a stable local name/id
   - a Git repository URL
   - a configured default branch name (optional; defaults to `main` when not specified)
+- The source default branch MAY be overridden per entry (see FR-018).
 
 **FR-014 — Entries**
 - The manifest MUST support multiple **entries**, each specifying:
@@ -89,7 +93,7 @@ The scope is aligned with `docs/prd.md` and the current decisions:
   - `from` path in source repo
   - `to` path in target repo
   - ref policy (see below)
-- For developer convenience, gitvend SHOULD support a mode where `to` defaults to the same relative path as `from` (exact manifest rules defined in `docs/manifest-spec.md`).
+- For developer convenience, gitvend SHOULD support a mode where `to` defaults to the same relative path as `from` (exact manifest rules defined in `doc/manifest-spec.md`).
 
 **FR-015 — Path validation**
 - gitvend MUST reject manifest entries that would write outside the target repository directory.
@@ -113,8 +117,12 @@ The scope is aligned with `docs/prd.md` and the current decisions:
 **FR-018 — Supported ref policies**
 - gitvend MUST support at least the following policies:
   - `same-branch-else-fail`
-  - `same-branch-else-default` (fallback to the per-source configured default branch)
+  - `same-branch-else-default` (fallback to an effective default branch)
   - `fixed-ref` (explicit branch/tag/commit)
+- For `same-branch-else-default`, the effective default branch MUST be resolved as:
+  - entry-level override if provided
+  - otherwise the source-level default branch
+  - otherwise `main`.
 
 **FR-019 — Default branch per source**
 - Each source MUST have a configurable default branch name.
@@ -164,7 +172,7 @@ The scope is aligned with `docs/prd.md` and the current decisions:
 - gitvend MUST support a deterministic CI workflow in which:
   - resolved SHAs can be pinned and re-used
   - changes that would alter resolved SHAs are detectable and reviewable
-- The exact behavior (e.g., whether `check` fails on lock drift) MUST be defined in `docs/output-artifacts.md` and `docs/cli-spec.md`.
+- The exact behavior (e.g., whether `check` fails on lock drift) MUST be defined in `doc/output-artifacts.md` and `doc/cli-spec.md`.
 
 **FR-028 — Machine-readable report**
 - gitvend MUST produce a machine-readable JSON report for each run (default name and location defined later).
@@ -216,11 +224,11 @@ The scope is aligned with `docs/prd.md` and the current decisions:
 - gitvend SHOULD provide convenience commands to create/update manifests, including:
   - adding a source
   - adding an entry (syncing a file/dir from a source into a target path)
-- These commands MUST validate inputs and produce a manifest that conforms to `docs/manifest-spec.md`.
+- These commands MUST validate inputs and produce a manifest that conforms to `doc/manifest-spec.md`.
 
 **FR-035 — Automatic initialization**
 - gitvend MUST create required directories under `${HOME}/.gitvend/` on demand (e.g., `mirrors/`).
-- gitvend SHOULD provide an initialization workflow that can create any required per-repo scaffolding (e.g., recommended `.gitignore` entries), defined in `docs/cli-spec.md`.
+- gitvend SHOULD provide an initialization workflow that can create any required per-repo scaffolding (e.g., recommended `.gitignore` entries), defined in `doc/cli-spec.md`.
 
 **FR-036 — Idempotent sync**
 - Repeated `sync` runs MUST be safe and idempotent: if sources and resolved SHAs did not change, outputs MUST remain unchanged.
@@ -230,12 +238,13 @@ The scope is aligned with `docs/prd.md` and the current decisions:
 - If local modifications exist for vendored outputs, gitvend MUST overwrite them during `sync` to match the resolved source revision.
 
 **FR-038 — Automatic commit of vendored changes**
-- When `sync` modifies vendored outputs, gitvend SHOULD automatically create a Git commit in the target repo.
+- When `sync` modifies vendored outputs, gitvend MUST be able to automatically create a Git commit in the target repo.
+- Auto-commit MUST be configurable in the manifest and MUST be overridable by environment variable.
+- If enabled, gitvend MUST stage and commit only the vendored outputs it manages (not unrelated workspace changes).
 - The commit message MUST include audit information, including:
-  - list of changed vendored paths (or a summary)
   - source repository identifiers
   - resolved commit SHAs used
-- gitvend MUST stage and commit only the vendored outputs it manages (not unrelated workspace changes).
+  - a summary of managed paths changed (or count).
 
 ### Distribution and CI execution modes
 
@@ -282,7 +291,7 @@ The scope is aligned with `docs/prd.md` and the current decisions:
 
 **NFR-009 — Reliability: lock timeout and stale-lock recovery**
 - gitvend MUST support a lock timeout.
-- gitvend SHOULD provide a safe stale-lock recovery strategy (defined in `docs/storage-and-locking.md`).
+- gitvend SHOULD provide a safe stale-lock recovery strategy (defined in `doc/storage-and-locking.md`).
 
 **NFR-010 — Observability: logs**
 - gitvend MUST provide readable logs suitable for local use.
@@ -316,6 +325,6 @@ The requirements above are implementable, but the following details should be ex
 
 1. **Lockfile/report locations**: where `gitvend.lock` and `gitvend.report.json` live by default (repo root vs configurable path).
 2. **Inline provenance defaults**: default off vs default on (and which file types are eligible).
-3. **Git dependency**: minimal supported Git version.
+3. **Git dependency**: minimal supported Git version (Decided: >= 2.20).
 4. **Auto-commit toggles**: whether automatic commits are always-on or configurable, and behavior when the repo has unrelated uncommitted changes.
 5. **Manifest discovery**: default manifest filenames and precedence if multiple are found.

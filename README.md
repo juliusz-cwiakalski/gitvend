@@ -65,7 +65,7 @@ Choose one of the following approaches (depending on how you ship gitvend):
 
 ### Option B — Build from source
 - Clone this repository.
-- Build using the toolchain specified in `docs/implementation-plan.md`.
+- Build using the toolchain specified in `doc/implementation-plan.md`.
 
 ---
 
@@ -110,8 +110,8 @@ entries:
     from: "api/openapi.yaml"
     to: "vendor/contracts/openapi.yaml"
     ref:
-      policy: same-branch-else-main
-      main_branch: main
+      policy: same-branch-else-default
+      default_branch: main
 
   # Vendor a directory (recursive)
   - id: json-schemas
@@ -127,9 +127,9 @@ Notes:
 - By default, gitvend attempts to resolve sources using the **current branch name** of the target repo. If the same branch exists in the source repo, gitvend uses it.
 - Fallback behavior is controlled by `ref.policy` (e.g., fallback to `main`, or fail if the branch is required).
 - `policy: same-branch-else-fail` is recommended when the change *must* include a matching branch in the source.
-- `policy: same-branch-else-main` is acceptable for optional dependencies but should still be visible in reports.
+- `policy: same-branch-else-default` is acceptable for optional dependencies but should still be visible in reports.
 
-The exact schema is defined in `docs/manifest-spec.md`.
+The exact schema is defined in `doc/manifest-spec.md`.
 
 ---
 
@@ -139,13 +139,13 @@ By default, gitvend stores bare mirrors under:
 
 - `${HOME}/.gitvend/mirrors/<id>.git`
 
-Where `<id>` is derived from the repository URL (typically via a stable hash). Additional metadata may be stored alongside the mirror.
+Where `<id>` is derived from the repository URL via a stable, filesystem-safe slug (with URL normalization such as removing protocol and trailing slashes). Additional metadata may be stored alongside the mirror.
 
 You can override the base directory via:
 - `--home <path>` (if supported), or
 - environment variable: `GITVEND_HOME` (recommended for CI).
 
-See `docs/storage-and-locking.md`.
+See `doc/storage-and-locking.md`.
 
 ---
 
@@ -156,7 +156,7 @@ gitvend uses locking to ensure safety:
 - **Per-mirror lock** during mirror updates (`fetch`) to prevent corruption.
 - **Workspace lock** during sync to prevent concurrent writes to the same target paths.
 
-Lock timeout and stale-lock recovery behavior are specified in `docs/storage-and-locking.md`.
+Lock timeout and stale-lock recovery behavior are specified in `doc/storage-and-locking.md`.
 
 ---
 
@@ -172,7 +172,7 @@ Optional/extended commands (may be added later):
 - `gitvend mirror update` — update mirrors without syncing files.
 - `gitvend cache gc` — cleanup old mirrors / unused objects.
 
-Full CLI contract: `docs/cli-spec.md`.
+Full CLI contract: `doc/cli-spec.md`.
 
 ---
 
@@ -180,7 +180,7 @@ Full CLI contract: `docs/cli-spec.md`.
 
 A typical sync run produces:
 
-- **Lockfile** (example name): `gitvend.lock` or `sync.lock`
+- **Lockfile** (name): `gitvend.lock`
   - Records resolved commit SHAs per source/ref.
   - Enables deterministic CI re-runs.
 
@@ -190,7 +190,7 @@ A typical sync run produces:
 - **Provenance markers** in vendored files (optional but recommended)
   - e.g., `synced from <repo>@<sha>:<path>`.
 
-Exact formats: `docs/output-artifacts.md`.
+Exact formats: `doc/output-artifacts.md`.
 
 ---
 
@@ -218,7 +218,7 @@ If `check` fails, the PR must run `sync` and commit the updated vendored content
 - Prefer SSH with agent locally.
 - In CI, use read-only tokens with least privilege.
 
-(Threat model and token handling can be expanded in `docs/security.md` if/when added.)
+(Threat model and token handling can be expanded in `doc/security.md` if/when added.)
 
 ---
 
@@ -240,16 +240,16 @@ If `check` fails, the PR must run `sync` and commit the updated vendored content
 
 ## Documentation
 
-All project documentation lives in `docs/`:
+All project documentation lives in `doc/`:
 
-- `docs/INDEX.md` — reading order and table of contents
-- `docs/prd.md` — product definition
-- `docs/requirements.md` — FR/NFR list
-- `docs/manifest-spec.md` — config schema
-- `docs/sync-algorithm.md` — resolution + vendoring algorithm
-- `docs/storage-and-locking.md` — mirror layout + locking
-- `docs/test-plan.md` — test cases
-- `docs/user-manual.md` — usage guide
+- `doc/INDEX.md` — reading order and table of contents
+- `doc/prd.md` — product definition
+- `doc/requirements.md` — FR/NFR list
+- `doc/manifest-spec.md` — config schema
+- `doc/sync-algorithm.md` — resolution + vendoring algorithm
+- `doc/storage-and-locking.md` — mirror layout + locking
+- `doc/test-plan.md` — test cases
+- `doc/user-manual.md` — usage guide
 
 ---
 
@@ -257,7 +257,7 @@ All project documentation lives in `docs/`:
 
 - Propose changes via PR.
 - Keep behavior deterministic and compatible with the manifest schema.
-- Add tests for any behavior change (see `docs/test-plan.md`).
+- Add tests for any behavior change (see `doc/test-plan.md`).
 
 ---
 

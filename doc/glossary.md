@@ -81,7 +81,7 @@ A **Ref Policy** defines how gitvend selects the source revision (commit) to ven
 
 Common policies:
 - **same-branch-else-fail**: Use a source branch with the same name as the current target repo branch; fail if not found.
-- **same-branch-else-main**: Use same-name branch if it exists; otherwise fallback to a configured main/default branch.
+- **same-branch-else-default**: Use same-name branch if it exists; otherwise fallback to a configured default branch.
 - **fixed-ref**: Use an explicitly configured branch, tag, or commit.
 
 Key attributes:

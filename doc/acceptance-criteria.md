@@ -1,6 +1,6 @@
 # gitvend — Acceptance Criteria (AC)
 
-This document defines acceptance criteria for **gitvend v1** and maps them to requirement IDs from `docs/requirements.md`.
+This document defines acceptance criteria for **gitvend v1** and maps them to requirement IDs from `doc/requirements.md`.
 
 ---
 
@@ -26,7 +26,7 @@ gitvend v1 is considered “done” when:
 
 4. Documentation is sufficient for users and implementers:
    - README provides a correct quickstart.
-   - `docs/INDEX.md` points to the canonical reading order.
+   - `doc/INDEX.md` points to the canonical reading order.
 
 ---
 
@@ -202,5 +202,5 @@ gitvend v1 is considered “done” when:
 
 ## Notes
 
-- Any acceptance criteria involving exact filenames/locations (report name, manifest filename precedence) are satisfied once defined in `docs/cli-spec.md`, `docs/manifest-spec.md`, and `docs/output-artifacts.md`.
+- Any acceptance criteria involving exact filenames/locations (report name, manifest filename precedence) are satisfied once defined in `doc/cli-spec.md`, `doc/manifest-spec.md`, and `doc/output-artifacts.md`.
 

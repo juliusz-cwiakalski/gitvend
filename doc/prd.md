@@ -167,5 +167,5 @@ gitvend intentionally does **not** aim to:
 
 ## Open questions (explicitly tracked)
 
-None for PRD scope. Any additional open questions should be tracked in `docs/requirements.md` once that document is created.
+Open questions and decisions are tracked in `doc/open-questions-and-decisions.md`.
 
