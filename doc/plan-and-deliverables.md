@@ -9,9 +9,9 @@ This plan translates our conversation into a complete, implementation-ready docu
 **gitvend** provides:
 - Local **bare Git mirrors** cached under `${HOME}/.gitvend/...` to save bandwidth and accelerate sync.
 - Safe **locking** for mirror updates and workspace sync operations.
-- **Selective vendoring** of files/folders from remote Git repositories into a target repository based on a manifest.
+- **Selective vendoring** of files/folders from remote git repositories into a target repository based on a manifest.
 - **Branch-aware ref resolution**: prefer a source branch matching the current workspace branch (or a configured change branch); configurable fallbacks.
-- CI-friendly **determinism** via a lockfile (resolved SHAs) and drift detection via `gitvend check`.
+- CI-friendly **determinism** via a lockfile (**`gitvend.lock`**) and drift detection via `gitvend check`.
 - Clear provenance for vendored artifacts; policy to prevent edits of vendored files in the consumer repo.
 
 Non-goals:
@@ -113,7 +113,7 @@ Non-goals:
   - multiple paths
 - Ref policies:
   - same-branch-else-fail
-  - same-branch-else-main
+  - same-branch-else-default
   - fixed ref/tag
 - Validation rules:
   - path traversal prevention
@@ -136,7 +136,7 @@ Non-goals:
 - Resolution precedence order:
   1) explicit override (flag/env)
   2) policy-driven same-branch
-  3) fallback policy
+  3) fallback policy (to configured default branch per repo)
   4) default branch
 - CI mode:
   - resolve all sources to SHAs
@@ -144,7 +144,7 @@ Non-goals:
   - store report
 - Extraction mechanisms:
   - file: `git show <sha>:<path>`
-  - folder: `git archive <sha> <path> | tar ...`
+  - folder: `git archive --format=zip <sha> <path>` + unzip
 - Atomic write strategy (temp → rename)
 
 ---
@@ -155,17 +155,20 @@ Non-goals:
 - Mirror layout:
   - `${HOME}/.gitvend/mirrors/<id>.git` (bare)
   - `${HOME}/.gitvend/mirrors/<id>.meta.json`
+  - `${HOME}/.gitvend/mirrors/<id>.lock` (per-mirror update lock)
 - URL→ID scheme (hash + optional slug)
 - Lock locations and formats
 - Lock timeout and stale-lock recovery policy
+- Lock metadata (acquired timestamp, PID when useful)
 - Crash/retry behavior
+- Cross-platform locking requirements (Windows/macOS/Linux)
 
 ---
 
 ### Step 8 — Output artifacts (lockfile + report + provenance)
 
 **8.1 `docs/output-artifacts.md`**
-- `gitvend.lock` (or `sync.lock`) format
+- `gitvend.lock` format
   - repo, ref policy, resolved SHA, timestamp
 - `gitvend.report.json` format
   - per-entry status, warnings, fallbacks, durations
