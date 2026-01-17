@@ -7,7 +7,7 @@ This plan translates our conversation into a complete, implementation-ready docu
 ## Scope Summary (baseline for all documents)
 
 **gitvend** provides:
-- Local **bare Git mirrors** cached under `${HOME}/.gitsync/...` to save bandwidth and accelerate sync.
+- Local **bare Git mirrors** cached under `${HOME}/.gitvend/...` to save bandwidth and accelerate sync.
 - Safe **locking** for mirror updates and workspace sync operations.
 - **Selective vendoring** of files/folders from remote Git repositories into a target repository based on a manifest.
 - **Branch-aware ref resolution**: prefer a source branch matching the current workspace branch (or a configured change branch); configurable fallbacks.
@@ -153,8 +153,8 @@ Non-goals:
 
 **7.1 `docs/storage-and-locking.md`**
 - Mirror layout:
-  - `${HOME}/.gitsync/mirrors/<id>.git` (bare)
-  - `${HOME}/.gitsync/mirrors/<id>.meta.json`
+  - `${HOME}/.gitvend/mirrors/<id>.git` (bare)
+  - `${HOME}/.gitvend/mirrors/<id>.meta.json`
 - URL→ID scheme (hash + optional slug)
 - Lock locations and formats
 - Lock timeout and stale-lock recovery policy

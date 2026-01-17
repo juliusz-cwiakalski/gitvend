@@ -23,7 +23,7 @@ When a change spans multiple repositories, shared artifacts tend to drift:
 
 ## Key features
 
-- **Local bare mirror cache** under `${HOME}/.gitsync/mirrors/…` (configurable).
+- **Local bare mirror cache** under `${HOME}/.gitvend/mirrors/…` (configurable).
 - **Repository update locking** to prevent concurrent mirror corruption.
 - **Manifest-driven selective sync** of files and folders (recursive) from Git sources.
 - **Branch-aware ref resolution** (prefer a branch matching your current workspace branch; configurable fallbacks).
@@ -96,7 +96,7 @@ version: 1
 
 settings:
   # Optional: override cache location
-  # home: "${HOME}/.gitsync"
+  # home: "${HOME}/.gitvend"
 
 sources:
   - name: contracts
@@ -137,7 +137,7 @@ The exact schema is defined in `docs/manifest-spec.md`.
 
 By default, gitvend stores bare mirrors under:
 
-- `${HOME}/.gitsync/mirrors/<id>.git`
+- `${HOME}/.gitvend/mirrors/<id>.git`
 
 Where `<id>` is derived from the repository URL (typically via a stable hash). Additional metadata may be stored alongside the mirror.
 
