@@ -8,7 +8,7 @@ The scope is aligned with `doc/prd.md` and the current decisions:
 - Vendor Lockfile: next to the manifest, named `<manifest-base>.lock.<ext>` (e.g., `gitvend.lock.yml`)
 - Manifests: YAML v1
 - Ref resolution: same-branch-first, fallback to per-source configured default branch (`main` by default; legacy repos may specify `master`)
-  - Default is configured on Source Repo and can be overridden per Vendor Entry.
+  - Source defaults are configured on Source Repo and can be overridden per Vendor Entry.
 - Directory vendoring: `git archive --format=zip` + unzip
 - LFS: treated as pointer files (no implicit fetching)
 - Git must be present on `PATH`
@@ -31,7 +31,7 @@ The scope is aligned with `doc/prd.md` and the current decisions:
 **FR-003 — Stable mirror identity**
 - gitvend MUST compute a stable mirror identifier `<mirror>` from the remote repository URL.
 - The identifier MUST be stable across runs and environments.
-- The mapping algorithm MUST be deterministic, human-readable, and based on a filesystem-safe slug derived from a normalized repository URL (e.g., remove protocol, normalize separators, remove trailing slashes).
+- The mapping algorithm MUST be deterministic, human-readable, and based on a filesystem-safe slug derived from `repoUrl`, per OQ-013 (protocol prefix + slug + short hash).
 
 **FR-004 — Mirror initialization**
 - If a mirror does not exist locally, gitvend MUST initialize it from the remote repository.
@@ -72,7 +72,7 @@ The scope is aligned with `doc/prd.md` and the current decisions:
 ### Manifest-driven vendoring
 
 **FR-011 — YAML manifest (v1)**
-- gitvend MUST accept a YAML manifest as input to define sources and entries.
+- gitvend MUST accept a YAML manifest as input to define source repos and vendor entries.
 - The manifest MUST be versioned (e.g., `version: 1`) to support future evolution.
 
 **FR-012 — Manifest model extensibility**
@@ -80,34 +80,35 @@ The scope is aligned with `doc/prd.md` and the current decisions:
 
 **FR-013 — Source Repos**
 - The manifest MUST support declaring multiple **Source Repos**, each including:
-  - a stable local name/id
-  - a Git repository URL
-  - a configured default branch name (optional; defaults to `main` when not specified)
-- The source default branch MAY be overridden per entry (see FR-018).
+  - a stable local name/id (`sourceId`)
+  - a Git repository URL (`repoUrl`)
+  - a configured default branch name (`defaultBranch`) (optional; defaults to `main` when not specified)
+  - a default ref policy (`refPolicyDefault`) (optional; defaults to `same-branch-else-default` when not specified)
+- The source branch MAY be overridden per vendor entry (entry-level override semantics are specified in the manifest spec).
 
 **FR-014 — Vendor Entries**
 - The manifest MUST support multiple **Vendor Entries**, each specifying:
-  - entry id
-  - source reference
+  - entry id (`entryId`)
+  - source reference (`sourceId`)
   - entry type (`file` or `dir`)
-  - `from` path in Source Repo
-  - `to` path in Target Repo
+  - `fromPath` in Source Repo
+  - `toPath` in Target Repo
   - ref policy (see below)
-- For developer convenience, gitvend SHOULD support a mode where `to` defaults to the same relative path as `from` (exact manifest rules defined in `doc/manifest-spec.md`).
+- For developer convenience, gitvend SHOULD support a mode where `toPath` defaults to the same relative path as `fromPath` (exact manifest rules defined in `doc/manifest-spec.md`).
 
 **FR-015 — Path validation**
 - gitvend MUST reject manifest entries that would write outside the Target Repo directory.
-- Absolute paths and path traversal (e.g., `..`) MUST be disallowed for `to`.
-- `from` MUST be validated to prevent injection into Git commands and to remain within repository paths.
+- Absolute paths and path traversal (e.g., `..`) MUST be disallowed for `toPath`.
+- `fromPath` MUST be validated to prevent injection into Git commands and to remain within repository paths.
 
 **FR-015a — Target path base**
-- Relative target paths (`to`) MUST be interpreted relative to the **Target Repo root** (the Git root containing the `.git` directory), not the current working directory.
+- Relative target paths (`toPath`) MUST be interpreted relative to the **Target Repo root** (the Git root containing the `.git` directory), not the current working directory.
 
 ### Ref resolution policies
 
 **FR-016 — Branch detection (target repo)**
 - gitvend MUST detect the current branch name of the target repository (or determine that it is detached HEAD).
-- When there is no branch name available, gitvend MUST apply the configured ref policy fallback strategy (typically fallback to the source default branch unless `fixed-ref` is configured).
+- When there is no branch name available, gitvend MUST apply the configured ref policy fallback strategy (typically fall back to the source `defaultBranch` unless `fixed-ref` is configured).
 
 **FR-017 — Same-branch-first resolution**
 - For policies that use same-branch behavior, gitvend MUST:
@@ -121,12 +122,12 @@ The scope is aligned with `doc/prd.md` and the current decisions:
   - `fixed-ref` (explicit branch/tag/commit)
 - For `same-branch-else-default`, the effective default branch MUST be resolved as:
   - entry-level override if provided
-  - otherwise the source-level default branch
-  - otherwise `main`.
+  - otherwise the source-level `defaultBranch`
+  - otherwise `main`. 
 
-**FR-019 — Default branch per source**
-- Each source MUST have a configurable default branch name.
-- If not configured, the default MUST be `main`.
+**FR-019 — Default branch per source repo**
+- Each source repo MUST have a configurable `defaultBranch`.
+- If not configured, it defaults to `main`.
 - Legacy repos MUST be able to specify `master` (or other names) explicitly.
 
 **FR-020 — Visibility of fallbacks**
@@ -135,10 +136,10 @@ The scope is aligned with `doc/prd.md` and the current decisions:
 ### Extraction and writing
 
 **FR-021 — File extraction**
-- For `file` entries, gitvend MUST extract content from the resolved commit using Git object access (e.g., `git show <sha>:<path>`).
+- For `file` vendor entries, gitvend MUST extract content from the resolved commit using Git object access (e.g., `git show <sha>:<path>`).
 
 **FR-022 — Directory extraction via ZIP archive**
-- For `dir` entries, gitvend MUST vendor the directory recursively without requiring a working-tree checkout.
+- For `dir` vendor entries, gitvend MUST vendor the directory recursively without requiring a working-tree checkout.
 - gitvend MUST use a portable mechanism such as:
   - `git archive --format=zip <sha> <path>`
   - followed by unzip/extraction

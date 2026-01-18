@@ -23,8 +23,8 @@ Status legend:
 ### OQ-003 — Default branch field location and naming
 - Status: Decided
 - Decision:
-  - Sources define a default branch (defaulting to `main`).
-  - Entries MAY override the default branch used for fallback.
+  - Source Repos define `defaultBranch` (defaulting to `main`).
+  - Vendor Entries MAY override the fallback branch via `defaultBranchOverride`.
   - Effective behavior for `same-branch-else-default`:
     - use entry override if present
     - else use source default
@@ -105,7 +105,25 @@ Status legend:
   - Timeout/stale-lock policy to be defined in storage spec.
 
 ### OQ-013 — Mirror id slug normalization and collision handling
-- Status: Open
-- Question:
-  - Define the exact normalization rules and allowed character set.
-  - How do we handle collisions deterministically (e.g., append `-<shortHash>` only when collision detected)?
+- Status: Decided
+- Decision:
+  - Allowed character set is slug-like (GitLab-style): lowercase ASCII letters (`a-z`), digits (`0-9`), and `-`.
+  - MirrorId format includes the protocol and always appends a short stable hash of the original `repoUrl` to make collisions deterministic.
+  - Proposed canonical shape:
+    - `<proto>-<slug>-<h>`
+      - `<proto>` comes from the URL scheme (e.g., `https`, `ssh`, `file`, `git`).
+      - `<slug>` derives from the repo location (host/path) with separators normalized to `-`.
+      - `<h>` is a short hash (e.g., 8-12 hex chars) of the full original `repoUrl` string.
+  - `file:` repoUrls should incorporate the full path in the slug (with `/` converted to `-`) before appending `-<h>`.
+
+### OQ-014 — Consistent naming across docs (Domain Model is source of truth)
+- Status: Decided
+- Decision: All docs use Domain Model naming 1:1 (e.g., `sourceRepos`, `vendorEntries`, `sourceId`, `repoUrl`, `fromPath`, `toPath`). Manifest spec is phrased in domain-model terms (no mismatches).
+
+### OQ-015 — RefPolicy defaults and `defaultBranch` ownership
+- Status: Decided
+- Decision:
+  - `refPolicy` default is defined at Source Repo level and MAY be overridden per Vendor Entry.
+  - If `vendorEntry.refPolicy` is empty/unset: inherit `sourceRepo.refPolicyDefault`; if that is also unset: fall back to `same-branch-else-default`.
+  - The Source Repo defines `defaultBranch` used for `same-branch-else-default` fallback.
+  - A Vendor Entry MAY override this fallback via `vendorEntry.defaultBranchOverride` (empty/unset means inherit).

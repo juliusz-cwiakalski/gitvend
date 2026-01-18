@@ -217,7 +217,7 @@ If `--manifest` is not provided:
   - Update mirror for an explicit repo URL without a manifest.
 
 - `--manifest <path>`
-  - Load sources from manifest. If omitted, requires `--url`.
+  - Load `sourceRepos` from manifest. If omitted, requires `--url`.
 
 - `--lock-timeout <duration>`
   - Wait time for Mirror Lock.
@@ -322,7 +322,7 @@ Default commit message (conceptual):
 
 Template variables (proposed):
 - `${manifest}` — manifest path
-- `${sources}` — list of sourceIds used
+- `${sourceRepos}` — list of `sourceId`s used
 - `${revisions}` — list of `sourceId@sha`
 - `${entriesChanged}` — count
 - `${pathsChanged}` — list or truncated list
@@ -355,7 +355,7 @@ Exact strict-mode matrix (which warning becomes error) is finalized in `doc/outp
 
 gitvend SHOULD log at `info`:
 - manifest selected + target repo root
-- number of sources and entries
+- number of source repos and vendor entries
 - for each source: mirror id and whether fetched
 - for each entry: resolved revision (ref + sha) and whether fallback was used
 - summary: counts (synced/unchanged/failed), duration

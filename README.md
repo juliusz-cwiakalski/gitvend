@@ -39,7 +39,7 @@ Examples:
 - **Manifest-driven selective sync** of files and folders (recursive) from Git sources.
 - **Branch-aware ref resolution** (prefer a branch matching your current Target Repo branch; configurable fallbacks).
 - **Portable directory vendoring** via `git archive --format=zip` + unzip (no working tree required; avoids OS-specific `tar` quirks).
-- **Deterministic CI** via a Vendor Lockfile (`gitvend-lock.yml`) with resolved commit SHAs.
+- **Deterministic CI** via a Vendor Lockfile (next to the manifest, e.g. `gitvend.lock.yml`) with resolved commit SHAs.
 - **Drift detection** via `gitvend check`.
 - **Provenance** for vendored outputs (Source Repo/ref/SHA/path).
 
@@ -60,7 +60,7 @@ Examples:
 - **Mirror**: a local bare clone of a remote repository, updated via `git fetch`.
 - **Manifest**: a config file declaring what to vendor (Source Repos → Target Paths).
 - **Vendor Entry**: one vendoring rule (Source Repo + path + ref policy → Target Path).
-- **Vendor Lockfile**: a file (`gitvend-lock.yml`) recording resolved SHAs for deterministic runs.
+- **Vendor Lockfile**: a file next to the manifest (named `<manifest-base>.lock.<ext>`, e.g. `gitvend.lock.yml`) recording resolved SHAs for deterministic runs.
 - **Run Report**: machine-readable summary of what was synced, including fallbacks/warnings.
 
 ---
@@ -84,7 +84,7 @@ Choose one of the following approaches (depending on how you ship gitvend):
 
 1) Create a manifest file (example: `gitvend.yml`).
 
-2) Sync vendored content:
+2) Sync vendored content (auto-commit is enabled by default):
 
 ```bash
 gitvend sync --manifest gitvend.yml
@@ -165,7 +165,7 @@ See `doc/storage-and-locking.md`.
 gitvend uses locking to ensure safety:
 
 - **Per-mirror lock** during mirror updates (`fetch`) to prevent corruption (`.lock.json`).
-- **Target Repo lock** during sync to prevent concurrent writes to the same target paths.
+- **Target Repo lock** during `sync` and `check` to prevent concurrent writes / ensure a consistent view of the workspace.
 
 Lock timeout and stale-lock recovery behavior are specified in `doc/storage-and-locking.md`.
 
@@ -191,11 +191,13 @@ Full CLI contract: `doc/cli-spec.md`.
 
 A typical sync run produces:
 
-- **Vendor Lockfile** (name): `gitvend-lock.yml`
+- **Vendor Lockfile** (next to the manifest): `<manifest-base>.lock.<ext>`
+  - Example: `gitvend.yml` -> `gitvend.lock.yml`
   - Records resolved commit SHAs per Source Repo/ref.
   - Enables deterministic CI re-runs.
 
-- **Run Report** (example name): `gitvend.report.json`
+- **Run Report** (default): `<target-repo>/.gitvend/gitvend.report.json`
+  - If it already exists, it is rotated to `<target-repo>/.gitvend/gitvend.report-<iso-timestamp>.json`.
   - Per-entry statuses, warnings, fallbacks used, timings.
 
 - **Provenance markers** in vendored files (optional but recommended)
@@ -236,8 +238,13 @@ If `check` fails, the PR must run `sync` and commit the updated vendored content
 ## Troubleshooting
 
 ### `check` fails with drift
-- Run `gitvend sync --manifest …` and commit the changed vendored files.
-- Inspect `gitvend.report.json` to see which Source Repo/ref changed.
+- Run `gitvend sync --manifest …` (it auto-commits managed changes by default).
+- Inspect `<target-repo>/.gitvend/gitvend.report.json` (or the `--report` path) to see which Source Repo/ref changed.
+
+### `sync` fails due to local changes in managed paths
+- This happens when you have uncommitted edits in gitvend-managed (vendored) files.
+- gitvend refuses to overwrite them to prevent work loss; commit/revert those changes first.
+- If you intended to change the artifact, make the change in the Source Repo instead and re-run `sync`.
 
 ### Branch not found
 - If policy is `same-branch-else-fail`, create the same-named branch in the source repo.

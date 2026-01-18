@@ -35,8 +35,8 @@ Concrete locations:
 **Key fields (conceptual):**
 - `version`
 - `settings` (optional)
-- `sources[]`
-- `entries[]`
+- `sourceRepos[]`
+- `vendorEntries[]`
 
 ---
 
@@ -48,6 +48,7 @@ A **Source Repo** represents one remote Git repository.
 - `sourceId` (stable name in the manifest)
 - `repoUrl`
 - `defaultBranch` (optional; defaults to `main`)
+- `refPolicyDefault` (optional; defaults to `same-branch-else-default`)
 - `authHint` (optional; informational only—no secrets)
 
 A Source Repo is materialized locally via a **Mirror**.
@@ -103,7 +104,7 @@ A **Mirror** is a local bare Git repository that caches a Source Repo.
 - `${HOME}/.gitvend/mirrors/<mirror>.git`
 
 **MirrorId:**
-- `<mirror>` is a deterministic, filesystem-safe, human-readable slug derived from a normalized `repoUrl`.
+- `<mirror>` is a deterministic, filesystem-safe, human-readable slug derived from `repoUrl` using OQ-013 rules (protocol prefix + slug + short hash).
 
 **Mirror metadata (optional, recommended):**
 - `${HOME}/.gitvend/mirrors/<mirror>.meta.json`
