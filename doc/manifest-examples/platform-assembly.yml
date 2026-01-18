@@ -1,0 +1,60 @@
+# platform-assembly.yml
+#
+# What this demonstrates
+# - A "platform assembly" repo that vendors from multiple source repos.
+# - Different ref policies per source repo (plus per-entry overrides).
+# - Using `defaultBranchOverride` for a specific vendor entry.
+# - Intentional separation of vendored outputs by domain under `vendor/`.
+
+version: 1
+
+settings:
+  autoCommit: true
+  dirtyPolicy: allow-unrelated
+
+sourceRepos:
+  - sourceId: central-docs
+    repoUrl: https://github.com/acme/central-docs.git
+    defaultBranch: main
+    refPolicyDefault: same-branch-else-default
+
+  - sourceId: contracts
+    repoUrl: https://github.com/acme/api-contracts.git
+    defaultBranch: main
+    refPolicyDefault: fixed-ref
+
+  - sourceId: build-scripts
+    repoUrl: ssh://git@gitlab.example.com/platform/build-scripts.git
+    defaultBranch: main
+    refPolicyDefault: same-branch-else-default
+
+vendorEntries:
+  - entryId: docs
+    sourceId: central-docs
+    type: dir
+    fromPath: doc/
+    toPath: vendor/docs/
+
+  - entryId: api-contracts
+    sourceId: contracts
+    type: paths
+    refPolicy: fixed-ref
+    ref: v2.0.1
+    paths:
+      - fromPath: openapi/public.yaml
+        toPath: vendor/contracts/openapi.public.yaml
+      - fromPath: proto/
+        toPath: vendor/contracts/proto/
+
+  - entryId: ci-scripts
+    sourceId: build-scripts
+    type: dir
+    fromPath: ci/
+    toPath: vendor/ci/
+
+  - entryId: legacy-hooks
+    sourceId: build-scripts
+    type: dir
+    fromPath: hooks/
+    toPath: vendor/hooks/
+    defaultBranchOverride: release/2024-12

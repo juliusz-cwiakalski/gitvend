@@ -1,0 +1,33 @@
+# ci-strict.yml
+#
+# What this demonstrates
+# - A CI-oriented manifest configuration.
+# - Enabling strict validation by default via `settings.strict`.
+# - Recommended pairing with CLI flags like `--ci` and `--fail-on-fallback`.
+#
+# Notes
+# - `settings.strict` controls default strictness for validation/warnings.
+# - `--fail-on-fallback` is a CLI flag (not a manifest field) that can be used
+#   to make "same branch missing -> defaultBranch" an error in CI.
+
+version: 1
+
+settings:
+  strict: true
+  autoCommit: false
+  dirtyPolicy: fail
+
+sourceRepos:
+  - sourceId: contracts
+    repoUrl: https://github.com/acme/api-contracts.git
+    defaultBranch: main
+    refPolicyDefault: same-branch-else-default
+
+vendorEntries:
+  - entryId: openapi
+    sourceId: contracts
+    type: file
+    fromPath: openapi/public.yaml
+    toPath: doc/contracts/openapi.public.yaml
+    # Prefer same-branch, but fall back to a dedicated release branch.
+    defaultBranchOverride: release/v2
