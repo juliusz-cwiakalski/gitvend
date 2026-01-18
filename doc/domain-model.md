@@ -3,9 +3,9 @@
 This document defines the core domain entities, their relationships, the main state transitions during `sync` and `check`, and a stable error taxonomy for v1.
 
 The model is aligned with:
-- `doc/glossary.md`
-- `doc/prd.md`
-- `doc/requirements.md`
+- [doc/glossary.md](doc/glossary.md)
+- [doc/prd.md](doc/prd.md)
+- [doc/requirements.md](doc/requirements.md)
 
 ---
 
@@ -177,7 +177,7 @@ If enabled (configurable), after successful sync:
   - source repo identifiers
   - resolved SHAs used
 
-Behavior with unrelated dirty changes is specified in `doc/cli-spec.md` / `doc/storage-and-locking.md`.
+Behavior with unrelated dirty changes is specified in [doc/cli-spec.md](doc/cli-spec.md) / `doc/storage-and-locking.md`.
 
 ---
 
@@ -430,7 +430,7 @@ gitvend distinguishes:
 In v1:
 - `GV_LFS_POINTER_ONLY` is a warning unless a strict mode is enabled.
 
-Strict-mode semantics and exit codes are specified in `doc/cli-spec.md`.
+Strict-mode semantics and exit codes are specified in [doc/cli-spec.md](doc/cli-spec.md).
 
 ---
 
@@ -440,5 +440,5 @@ This domain model intentionally does not finalize:
 - run report filename and default location
 - exact mirror-id collision strategy
 
-These remain tracked in `doc/open-questions-and-decisions.md` and will be resolved in `doc/storage-and-locking.md` and `doc/output-artifacts.md`.
+These remain tracked in [doc/open-questions-and-decisions.md](doc/open-questions-and-decisions.md) and will be resolved in `doc/storage-and-locking.md` and `doc/output-artifacts.md`.
 

@@ -1,9 +1,9 @@
 # Manifest Examples
 
 This folder contains example gitvend manifests based on:
-- `doc/manifest-spec.md`
-- `doc/domain-model.md`
-- `doc/cli-spec.md`
+- [doc/manifest-spec.md](../manifest-spec.md)
+- [doc/domain-model.md](../domain-model.md)
+- [doc/cli-spec.md](../cli-spec.md)
 
 Each file starts with brief notes describing what it demonstrates.
 

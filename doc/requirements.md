@@ -2,7 +2,7 @@
 
 This document defines functional requirements (FR) and non-functional requirements (NFR) for **gitvend**.
 
-The scope is aligned with `doc/prd.md` and the current decisions:
+The scope is aligned with [doc/prd.md](doc/prd.md) and the current decisions:
 - Mirror base directory: `${HOME}/.gitvend/`
 - Per-mirror lock file: `${HOME}/.gitvend/mirrors/<mirror>.lock.json`
 - Vendor Lockfile: next to the manifest, named `<manifest-base>.lock.<ext>` (e.g., `gitvend.lock.yml`)
@@ -21,7 +21,7 @@ The scope is aligned with `doc/prd.md` and the current decisions:
 
 **FR-001 — Mirror home directory**
 - gitvend MUST store its local cache under `${HOME}/.gitvend/` by default.
-- gitvend SHOULD support overriding this location via configuration (exact mechanism defined in `doc/cli-spec.md` and `doc/manifest-spec.md`).
+- gitvend SHOULD support overriding this location via configuration (exact mechanism defined in [doc/cli-spec.md](doc/cli-spec.md) and [doc/manifest-spec.md](doc/manifest-spec.md)).
 
 **FR-002 — Mirror storage structure**
 - gitvend MUST store bare mirrors under `${HOME}/.gitvend/mirrors/`.
@@ -94,7 +94,7 @@ The scope is aligned with `doc/prd.md` and the current decisions:
   - `fromPath` in Source Repo
   - `toPath` in Target Repo
   - ref policy (see below)
-- For developer convenience, gitvend SHOULD support a mode where `toPath` defaults to the same relative path as `fromPath` (exact manifest rules defined in `doc/manifest-spec.md`).
+- For developer convenience, gitvend SHOULD support a mode where `toPath` defaults to the same relative path as `fromPath` (exact manifest rules defined in [doc/manifest-spec.md](doc/manifest-spec.md)).
 
 **FR-015 — Path validation**
 - gitvend MUST reject manifest entries that would write outside the Target Repo directory.
@@ -174,7 +174,7 @@ The scope is aligned with `doc/prd.md` and the current decisions:
 - gitvend MUST support a deterministic CI workflow in which:
   - resolved SHAs can be pinned and re-used
   - changes that would alter resolved SHAs are detectable and reviewable
-- The exact behavior (e.g., whether `check` fails on lock drift) MUST be defined in `doc/output-artifacts.md` and `doc/cli-spec.md`.
+- The exact behavior (e.g., whether `check` fails on lock drift) MUST be defined in `doc/output-artifacts.md` and [doc/cli-spec.md](doc/cli-spec.md).
 
 **FR-028 — Machine-readable report**
 - gitvend MUST produce a machine-readable JSON report for each run (default name and location defined later).
@@ -226,11 +226,11 @@ The scope is aligned with `doc/prd.md` and the current decisions:
 - gitvend SHOULD provide convenience commands to create/update manifests, including:
   - adding a source
   - adding an entry (syncing a file/dir from a source into a target path)
-- These commands MUST validate inputs and produce a manifest that conforms to `doc/manifest-spec.md`.
+- These commands MUST validate inputs and produce a manifest that conforms to [doc/manifest-spec.md](doc/manifest-spec.md).
 
 **FR-035 — Automatic initialization**
 - gitvend MUST create required directories under `${HOME}/.gitvend/` on demand (e.g., `mirrors/`).
-- gitvend SHOULD provide an initialization workflow that can create any required per-repo scaffolding (e.g., recommended `.gitignore` entries), defined in `doc/cli-spec.md`.
+- gitvend SHOULD provide an initialization workflow that can create any required per-repo scaffolding (e.g., recommended `.gitignore` entries), defined in [doc/cli-spec.md](doc/cli-spec.md).
 
 **FR-036 — Idempotent sync**
 - Repeated `sync` runs MUST be safe and idempotent: if sources and resolved SHAs did not change, outputs MUST remain unchanged.
@@ -329,7 +329,7 @@ The scope is aligned with `doc/prd.md` and the current decisions:
 
 The requirements above are implementable, but the following details should be explicitly decided in later documents to remove remaining ambiguity:
 
-1. **Lockfile/report locations**: Paths are decided in `doc/cli-spec.md` and `doc/open-questions-and-decisions.md`; remaining questions belong to `doc/output-artifacts.md` (field schema, lifecycle).
+1. **Lockfile/report locations**: Paths are decided in [doc/cli-spec.md](doc/cli-spec.md) and [doc/open-questions-and-decisions.md](doc/open-questions-and-decisions.md); remaining questions belong to `doc/output-artifacts.md` (field schema, lifecycle).
 2. **Inline provenance defaults**: default off vs default on (and which file types are eligible).
 3. **Git dependency**: minimal supported Git version (Decided: Git v2).
 4. **Auto-commit toggles**: field/env naming (if any) and any additional policy knobs beyond the decided default dirty-policy (`allow-unrelated`).

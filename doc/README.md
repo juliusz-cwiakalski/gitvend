@@ -8,26 +8,26 @@ This index is the canonical entry point for gitvend documentation. It defines th
 
 Implementers should read documents in the order below to minimize ambiguity and ensure consistent behavior.
 
-1. **Product definition** — `doc/prd.md`
-   - Problem statement, scope, personas, success criteria.
+1. **Product definition** — [doc/prd.md](doc/prd.md)
+    - Problem statement, scope, personas, success criteria.
 
-2. **Requirements** — `doc/requirements.md`
-   - Functional requirements (FR) and non-functional requirements (NFR).
+2. **Requirements** — [doc/requirements.md](doc/requirements.md)
+    - Functional requirements (FR) and non-functional requirements (NFR).
 
 3. **Acceptance criteria** — `doc/acceptance-criteria.md`
    - “Definition of Done” and mapping to FR/NFR.
 
-4. **Domain model** — `doc/domain-model.md`
-   - Terminology, entities, state transitions, error taxonomy.
+4. **Domain model** — [doc/domain-model.md](doc/domain-model.md)
+    - Terminology, entities, state transitions, error taxonomy.
 
-5. **CLI contract** — `doc/cli-spec.md`
-   - Commands, flags, exit codes, output locations, CI semantics.
+5. **CLI contract** — [doc/cli-spec.md](doc/cli-spec.md)
+    - Commands, flags, exit codes, output locations, CI semantics.
 
-6. **Manifest specification** — `doc/manifest-spec.md`
-   - Config schema, validation rules, examples, defaults.
+6. **Manifest specification** — [doc/manifest-spec.md](doc/manifest-spec.md)
+    - Config schema, validation rules, examples, defaults.
 
-7. **Sync & resolution algorithm** — `doc/sync-algorithm.md`
-   - Branch-aware ref resolution (same-branch-first), fallback policies, SHA pinning.
+7. **Sync & resolution algorithm** — [doc/sync-algorithm.md](doc/sync-algorithm.md)
+    - Branch-aware ref resolution (same-branch-first), fallback policies, SHA pinning.
 
 8. **Storage & locking** — `doc/storage-and-locking.md`
    - Mirror cache layout, lock strategy, timeouts, crash safety.
@@ -63,11 +63,11 @@ Users should read in this order:
 2. **User manual** — `doc/user-manual.md`
    - Installation (JAR + wrappers), everyday workflows, troubleshooting.
 
-3. **Manifest specification** — `doc/manifest-spec.md`
-   - When creating or modifying manifests.
+3. **Manifest specification** — [doc/manifest-spec.md](doc/manifest-spec.md)
+    - When creating or modifying manifests.
 
-4. **CLI contract** — `doc/cli-spec.md`
-   - Detailed command usage, flags, exit codes.
+4. **CLI contract** — [doc/cli-spec.md](doc/cli-spec.md)
+    - Detailed command usage, flags, exit codes.
 
 5. **Troubleshooting (reference)**
    - `doc/user-manual.md` (Troubleshooting section)
@@ -77,10 +77,10 @@ Users should read in this order:
 
 ## Cross-links to core specs
 
-- Product requirements document (PRD): `doc/prd.md`
-- Requirements (FR/NFR): `doc/requirements.md`
-- Manifest schema: `doc/manifest-spec.md`
-- Sync / ref resolution algorithm: `doc/sync-algorithm.md`
+- Product requirements document (PRD): [doc/prd.md](doc/prd.md)
+- Requirements (FR/NFR): [doc/requirements.md](doc/requirements.md)
+- Manifest schema: [doc/manifest-spec.md](doc/manifest-spec.md)
+- Sync / ref resolution algorithm: [doc/sync-algorithm.md](doc/sync-algorithm.md)
 - Test plan: `doc/test-plan.md`
 
 ---

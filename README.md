@@ -47,6 +47,57 @@ Examples:
 
 ---
 
+## 5-minute quickstart (aha in one repo)
+
+Goal: vendor a small slice of another repo (contracts/docs/schemas) into your current repo, so humans and AI agents can read it locally and CI can verify it never drifts.
+
+1) Create a manifest (example: `gitvend.yml`):
+
+```yaml
+version: 1
+
+sourceRepos:
+  - sourceId: contracts
+    repoUrl: "git@github.com:acme/contracts.git"
+    defaultBranch: main
+    refPolicyDefault: same-branch-else-default
+
+vendorEntries:
+  - entryId: openapi
+    sourceId: contracts
+    type: file
+    fromPath: api/openapi.yaml
+    toPath: vendor/contracts/openapi.yaml
+
+  - entryId: json-schemas
+    sourceId: contracts
+    type: dir
+    fromPath: schemas/json/
+    toPath: vendor/contracts/schemas/json/
+```
+
+2) Sync vendored content into your repo:
+
+```bash
+gitvend sync --manifest gitvend.yml
+```
+
+You should now see `vendor/contracts/...` updated in your working tree. Commit those outputs so they travel with the repo (the point is: the context is present for every developer, every agent, and every CI run).
+
+3) Add drift detection in CI (fails if vendored files are out of date):
+
+```bash
+gitvend check --manifest gitvend.yml
+```
+
+Typical workflow:
+- In a PR: run `gitvend sync` when you intentionally update shared knowledge.
+- In CI: run `gitvend check` to enforce "no silent divergence".
+
+That’s it: your repo now contains the minimum shared context an agent (and a human) needs to work effectively without cloning extra repos or copy/paste.
+
+---
+
 ## Key features
 
 - **Local bare mirror cache** under `${HOME}/.gitvend/mirrors/…` (configurable).
@@ -121,32 +172,30 @@ The manifest is the single source of truth for what gets vendored.
 version: 1
 
 settings:
-  # Optional: override cache location
-  # home: "${HOME}/.gitvend"
+  # Optional: turn off auto-commit for sync
+  # autoCommit: false
 
-sources:
-  - name: contracts
-    repo: "git@github.com:acme/contracts.git"
+sourceRepos:
+  - sourceId: contracts
+    repoUrl: "git@github.com:acme/contracts.git"
+    defaultBranch: main
+    refPolicyDefault: same-branch-else-default
 
-entries:
+vendorEntries:
   # Vendor a single file
-  - id: openapi
-    source: contracts
+  - entryId: openapi
+    sourceId: contracts
     type: file
-    from: "api/openapi.yaml"
-    to: "vendor/contracts/openapi.yaml"
-    ref:
-      policy: same-branch-else-default
-      default_branch: main
+    fromPath: api/openapi.yaml
+    toPath: vendor/contracts/openapi.yaml
 
   # Vendor a directory (recursive)
-  - id: json-schemas
-    source: contracts
+  - entryId: json-schemas
+    sourceId: contracts
     type: dir
-    from: "schemas/json"
-    to: "vendor/contracts/schemas/json"
-    ref:
-      policy: same-branch-else-fail
+    fromPath: schemas/json/
+    toPath: vendor/contracts/schemas/json/
+    refPolicy: same-branch-else-fail
 ```
 
 Notes:

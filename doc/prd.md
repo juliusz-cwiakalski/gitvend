@@ -167,5 +167,5 @@ gitvend intentionally does **not** aim to:
 
 ## Open questions (explicitly tracked)
 
-Open questions and decisions are tracked in `doc/open-questions-and-decisions.md`.
+Open questions and decisions are tracked in [doc/open-questions-and-decisions.md](doc/open-questions-and-decisions.md).
 

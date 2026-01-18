@@ -8,9 +8,9 @@ It is a UX contract for:
 - AI coding agents implementing the tool
 
 It is aligned with:
-- `doc/domain-model.md`
-- `doc/requirements.md`
-- `doc/acceptance-criteria.md`
+- [doc/domain-model.md](doc/domain-model.md)
+- [doc/requirements.md](doc/requirements.md)
+- [doc/acceptance-criteria.md](doc/acceptance-criteria.md)
 
 ---
 

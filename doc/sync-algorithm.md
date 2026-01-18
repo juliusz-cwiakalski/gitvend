@@ -38,7 +38,7 @@ The resolution algorithm supports an optional **Resolution Override** input:
 
 - **Override Branch Name**: a branch name treated as the Target Repo “current branch name” for resolution purposes.
 
-**Status:** if this override is not explicitly present in `doc/cli-spec.md`, it MUST be treated as **not implemented in v1** (see Open Questions).
+**Status:** if this override is not explicitly present in [doc/cli-spec.md](doc/cli-spec.md), it MUST be treated as **not implemented in v1** (see Open Questions).
 
 ### 1.3 Canonical file conventions (recap)
 
@@ -465,7 +465,7 @@ When auto-commit is enabled:
 
 1) **Resolution Override surface (flag/env):**
    - Do you want a v1 supported override such as `--branch <name>` and/or `GITVEND_BRANCH`?
-   - If yes, we should add it to `doc/cli-spec.md` and the manifest spec only if needed.
+    - If yes, we should add it to [doc/cli-spec.md](doc/cli-spec.md) and the manifest spec only if needed.
 
 2) **Parallel execution:**
    - v1 can remain sequential; confirm if any parallelism is desired (e.g., per Target Repo or per Source Repo) since it affects lock hold times.
