@@ -1,0 +1,20 @@
+# minimal.yml
+#
+# What this demonstrates
+# - The smallest useful manifest: one source repo + one vendored file.
+# - `toPath` omitted, so it defaults to `fromPath`.
+# - `refPolicy` omitted, so it inherits `refPolicyDefault` from the source repo.
+
+version: 1
+
+sourceRepos:
+  - sourceId: docs
+    repoUrl: https://github.com/acme/central-docs.git
+    defaultBranch: main
+    refPolicyDefault: same-branch-else-default
+
+vendorEntries:
+  - entryId: north-star
+    sourceId: docs
+    type: file
+    fromPath: doc/north-star.md

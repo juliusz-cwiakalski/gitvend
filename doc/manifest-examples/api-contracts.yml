@@ -1,0 +1,28 @@
+# api-contracts.yml
+#
+# What this demonstrates
+# - Vendoring API contracts from a separate repo.
+# - A `fixed-ref` policy to pin to a release tag.
+# - Using a bundle entry (`type: paths`) so multiple contract artifacts share the same ref resolution.
+
+version: 1
+
+sourceRepos:
+  - sourceId: contracts
+    repoUrl: https://github.com/acme/api-contracts.git
+    defaultBranch: main
+    refPolicyDefault: fixed-ref
+
+vendorEntries:
+  - entryId: api-contracts-v1
+    sourceId: contracts
+    type: paths
+    refPolicy: fixed-ref
+    ref: v1.2.0
+    paths:
+      - fromPath: openapi/public.yaml
+        toPath: doc/contracts/openapi.public.yaml
+      - fromPath: openapi/internal.yaml
+        toPath: doc/contracts/openapi.internal.yaml
+      - fromPath: proto/
+        toPath: doc/contracts/proto/

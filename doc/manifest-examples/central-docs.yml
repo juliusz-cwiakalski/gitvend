@@ -1,0 +1,32 @@
+# central-docs.yml
+#
+# What this demonstrates
+# - A single docs Source Repo vendored into a consumer repo.
+# - Mix of `dir` and `file` vendor entries.
+# - `same-branch-else-default` behavior with per-source defaults.
+# - Target path layout that keeps vendored content under `doc/vendor/`.
+
+version: 1
+
+settings:
+  autoCommit: true
+  dirtyPolicy: allow-unrelated
+
+sourceRepos:
+  - sourceId: central-docs
+    repoUrl: https://github.com/acme/central-docs.git
+    defaultBranch: main
+    refPolicyDefault: same-branch-else-default
+
+vendorEntries:
+  - entryId: docs-site
+    sourceId: central-docs
+    type: dir
+    fromPath: doc/
+    toPath: doc/vendor/central-docs/
+
+  - entryId: contributor-guide
+    sourceId: central-docs
+    type: file
+    fromPath: CONTRIBUTING.md
+    toPath: doc/CONTRIBUTING.vendor.md
