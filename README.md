@@ -8,9 +8,24 @@ Vendoring selected files and folders from remote Git repositories—**determinis
 
 ## Why gitvend
 
-When you work across multiple repositories (e.g., a microservices platform), you often need *the same shared knowledge* available locally in each repo so work can proceed quickly and safely.
+Modern multi-repo teams need *knowledge propagation*, not just code sharing: API contracts, schemas, runbooks, architecture decisions, and reference implementations must stay close to where work happens.
 
-This becomes critical when using AI coding agents: the agent can only act on what it can read in the current repository. If important context lives elsewhere (API contracts, architecture docs, schemas), the agent either operates with incomplete knowledge or you end up copying files around by hand.
+This is most crucial in AI-augmented delivery workflows. When you orchestrate AI coding agents (Claude Code, Cursor, Copilot-style agents), they can only act on what they can read in the current repository. If the current repo doesn’t contain the latest contracts/docs/schemas, the agent works with partial context: it hallucinates, proposes incompatible changes, or forces you into repetitive “copy files into the chat” busywork. Keeping essential cross-repo context in-repo is the difference between agents that accelerate delivery and agents that constantly need babysitting.
+
+`gitvend` improves developer experience by removing the frictions around knowledge synchronization:
+- Keep the *authoritative* source in the upstream repo, but vendor the *needed subset* into each consumer repo.
+- Make context available to both the engineer driving an agent swarm and to any developer just building locally.
+- Make CI deterministic: avoid “it works on my machine” and prevent silent drift.
+
+Cross-repo references are also an access-control problem. In real organizations, not every engineer (or CI job) can read every repository. It’s common to reference a “central” repo (platform docs, contracts, schemas) that some team members don’t have access to yet (new joiners, contractors, least-privilege policies), or that CI cannot clone due to missing credentials. Even if the link is correct, it still blocks work. Vendoring the exact needed files into the Target Repo removes that friction: onboarding is faster, builds/tests run without extra auth wiring, and reviews include the source material in the same diff.
+
+Example (common in microservices):
+- `service-payments` links to `platform-contracts` for `openapi.yaml` and JSON Schemas.
+- A contractor (or a new joiner) has access to `service-payments` but not `platform-contracts`.
+- Without vendoring: they can’t inspect the contract locally, validations fail or get skipped, and the change stalls on “please grant access / please paste the file”.
+- With gitvend: `vendor/contracts/openapi.yaml` and `vendor/contracts/schemas/…` live in `service-payments`, so humans and agents can work immediately with complete, up-to-date context.
+
+Beyond developers, platform/DevOps teams can use gitvend anywhere they need safe, repeatable syncing of selected files across repos (e.g., shared CI templates, policy bundles, runbooks, baseline configs) without pulling in full working trees or teaching every pipeline how to clone everything.
 
 Common pain points:
 - API contracts in one repo silently diverge from consumers.
