@@ -13,9 +13,9 @@ gitvend v1 is considered “done” when:
    - update required mirrors safely (with cross-platform locks),
    - resolve refs deterministically using same-branch-first with configured fallback,
    - vendor files and directories using object-level extraction (file: `git show`, dir: `git archive --format=zip`),
-   - write/update `gitvend-lock.yml` (Vendor Lockfile),
+   - write/update the vendor lockfile (next to the manifest),
    - produce a JSON report,
-   - optionally auto-commit managed changes with an audit-friendly commit message.
+   - auto-commit managed changes by default (with an audit-friendly commit message).
 
 2. A CI job can run `gitvend check` and:
    - detect drift between vendored outputs and the resolved sources,
@@ -131,21 +131,21 @@ gitvend v1 is considered “done” when:
 ---
 
 ### AC-015 — Golden source overwrite semantics
-**Statement:** If a managed vendored file is modified locally, a subsequent `gitvend sync` overwrites it to match the resolved source revision.
+**Statement:** If a managed vendored file is modified locally but uncommitted, a subsequent `gitvend sync` fails to avoid overwriting local work; if it is committed, a later sync may overwrite it (normal git history applies).
 
 **Mapped requirements:** FR-037
 
 ---
 
 ### AC-016 — Determinism lockfile written
-**Statement:** `gitvend sync` writes/updates `gitvend-lock.yml` in the target repo, recording resolved commit SHAs for each Source Repo/ref used.
+**Statement:** `gitvend sync` writes/updates the vendor lockfile next to the manifest (e.g., `gitvend.yml` -> `gitvend.lock.yml`), recording resolved commit SHAs for each Source Repo/ref used.
 
 **Mapped requirements:** FR-026, FR-027, NFR-001
 
 ---
 
 ### AC-017 — JSON report produced
-**Statement:** Each run produces a JSON report containing per-entry outcomes, resolved refs/SHAs, fallback usage, and errors when present.
+**Statement:** Each run produces a JSON report (default path: `<target-repo>/.gitvend/gitvend.report.json`) containing per-entry outcomes, resolved refs/SHAs, fallback usage, and errors when present.
 
 **Mapped requirements:** FR-028, FR-020, NFR-011
 
@@ -159,7 +159,7 @@ gitvend v1 is considered “done” when:
 ---
 
 ### AC-019 — `check` detects drift and does not modify outputs
-**Statement:** `gitvend check` exits non-zero if vendored outputs differ from what the manifest and resolved refs dictate, and does not modify target repo outputs.
+**Statement:** `gitvend check` exits non-zero if vendored outputs differ from what the manifest and resolved refs dictate. It must not modify target repo outputs.
 
 **Mapped requirements:** FR-031, FR-027, NFR-001, NFR-003
 
@@ -187,7 +187,11 @@ gitvend v1 is considered “done” when:
 ---
 
 ### AC-023 — Auto-commit of managed changes
-**Statement:** When `sync` changes managed outputs, gitvend stages and commits only those managed paths, using a commit message that includes Source Repo identifiers and resolved SHAs.
+**Statement:** When `sync` changes managed outputs, gitvend auto-commits by default, staging and committing only managed paths.
+
+It must:
+- allow unrelated uncommitted changes by default (`dirty-policy: allow-unrelated`), but still commit only managed paths
+- fail if any gitvend-managed path has uncommitted changes (to prevent overwriting local work)
 
 **Mapped requirements:** FR-038
 

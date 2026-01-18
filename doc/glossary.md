@@ -107,7 +107,7 @@ Purpose:
 
 ## Vendor Lockfile
 
-A **Vendor Lockfile** (`gitvend-lock.yml`) is an output artifact that records the exact resolved commit SHAs used during a sync.
+A **Vendor Lockfile** (`<manifest-base>.lock.<ext>`, e.g. `gitvend.lock.yml`) is an output artifact that records the exact resolved commit SHAs used during a sync.
 
 The lockfile typically includes (per source/ref):
 - Repository URL
@@ -123,7 +123,7 @@ Purpose:
 
 ## Run Report
 
-A **Run Report** is a machine-readable summary of a gitvend run, typically produced as JSON (e.g., `gitvend.report.json`).
+A **Run Report** is a machine-readable summary of a gitvend run, typically produced as JSON (default: `<target-repo>/.gitvend/gitvend.report.json`).
 
 The report typically includes:
 - Per-entry status (synced/unchanged/failed)

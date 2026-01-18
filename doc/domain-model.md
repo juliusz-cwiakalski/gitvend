@@ -13,7 +13,7 @@ The model is aligned with:
 
 gitvend uses two distinct “lock” concepts:
 
-- **Vendor Lockfile** (determinism/pinning): `gitvend-lock.yml`
+- **Vendor Lockfile** (determinism/pinning): next to the manifest, named `<manifest-base>.lock.<ext>` (e.g., `gitvend.lock.yml`)
 - **Locks** (concurrency): `*.lock.json`
 
 Concrete locations:
@@ -133,8 +133,14 @@ A **Target Repo** is the Git repository where vendored content is written.
 
 ### 1.7 Output artifacts
 
-#### Vendor Lockfile (`gitvend-lock.yml`)
+#### Vendor Lockfile (`<manifest-base>.lock.<ext>`)
 Records resolved SHAs to support deterministic CI.
+
+Naming rules:
+- Manifest `gitvend.yml` -> lockfile `gitvend.lock.yml`
+- Manifest `gitvend.yaml` -> lockfile `gitvend.lock.yaml`
+- Manifest `.gitvend.yml` -> lockfile `.gitvend.lock.yml`
+- Manifest `.gitvend.yaml` -> lockfile `.gitvend.lock.yaml`
 
 **Conceptual content:**
 - run metadata (timestamp, tool version)
@@ -143,8 +149,10 @@ Records resolved SHAs to support deterministic CI.
   - `effectiveRefName`
   - `resolvedCommitSha`
 
-#### Run Report (`gitvend.report.json` — filename/location TBD)
+#### Run Report (`<target-repo>/.gitvend/gitvend.report.json`)
 Machine-readable JSON report summarizing a run.
+
+If the report already exists, it is rotated to `<target-repo>/.gitvend/gitvend.report-<iso-timestamp>.json` before writing a new one.
 
 **Conceptual content:**
 - per Vendor Entry:
@@ -179,9 +187,9 @@ Behavior with unrelated dirty changes is specified in `doc/cli-spec.md` / `doc/s
 - Each **Source Repo** maps to exactly one **Mirror** (via MirrorId).
 - Each **Vendor Entry** produces output under a **Target Path** in the **Target Repo**.
 - A run produces output artifacts:
-  - `gitvend-lock.yml`
-  - run report JSON
-  - optional provenance
+   - vendor lockfile (next to the manifest)
+   - run report JSON
+   - optional provenance
 - A run acquires locks:
   - mirror lock during mirror update
   - target repo lock during writing/staging/committing
@@ -400,9 +408,9 @@ Errors are emitted with a stable, machine-parseable code.
 - `GV_DISK_FULL` — insufficient space
 
 #### REPORT
-- `GV_VENDOR_LOCKFILE_READ_FAILED` — cannot read `gitvend-lock.yml`
+- `GV_VENDOR_LOCKFILE_READ_FAILED` — cannot read the vendor lockfile
 - `GV_VENDOR_LOCKFILE_PARSE_FAILED` — vendor lockfile format invalid
-- `GV_VENDOR_LOCKFILE_WRITE_FAILED` — cannot write `gitvend-lock.yml`
+- `GV_VENDOR_LOCKFILE_WRITE_FAILED` — cannot write the vendor lockfile
 - `GV_REPORT_WRITE_FAILED` — cannot write run report JSON
 - `GV_PROVENANCE_WRITE_FAILED` — provenance marker/sidecar write failed
 - `GV_DRIFT_DETECTED` — `check` found drift

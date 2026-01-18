@@ -11,7 +11,7 @@ This plan translates our conversation into a complete, implementation-ready docu
 - Safe **locking** for mirror updates and Target Repo sync operations.
 - **Selective vendoring** of files/folders from remote git repositories into a Target Repo based on a manifest.
 - **Branch-aware ref resolution**: prefer a Source Repo branch matching the current Target Repo branch (or a configured change branch); configurable fallbacks.
-- CI-friendly **determinism** via a Vendor Lockfile (**`gitvend-lock.yml`**) and drift detection via `gitvend check`.
+- CI-friendly determinism via a Vendor Lockfile (next to the manifest, e.g. `gitvend.lock.yml`) and drift detection via `gitvend check`.
 - Clear provenance for vendored artifacts; policy to prevent edits of vendored files in the consumer repo.
 
 Non-goals:
@@ -168,9 +168,9 @@ Non-goals:
 ### Step 8 — Output artifacts (Vendor Lockfile + report + provenance)
 
 **8.1 `doc/output-artifacts.md`**
-- `gitvend-lock.yml` format
+- Vendor Lockfile format (`<manifest-base>.lock.<ext>`)
   - repo, ref policy, resolved SHA, timestamp
-- `gitvend.report.json` format
+- Run Report format (`<target-repo>/.gitvend/gitvend.report.json`)
   - per-entry status, warnings, fallbacks, durations
 - Provenance header conventions
 - `check` mode rules for drift detection

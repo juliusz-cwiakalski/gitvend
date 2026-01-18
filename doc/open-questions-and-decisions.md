@@ -31,26 +31,35 @@ Status legend:
     - else `main`
 
 ### OQ-004 — Output artifact names and locations (report + lockfile)
-- Status: Partially decided
+- Status: Decided
 - Decision:
-  - Vendor Lockfile name: `gitvend-lock.yml` (in the Target Repo, at repo root).
-- Still open:
-  - Canonical report name/location (currently assumed `gitvend.report.json`).
+  - Default Run Report path: `<target-repo>/.gitvend/gitvend.report.json`.
+  - If the default report already exists, gitvend rotates it to `<target-repo>/.gitvend/gitvend.report-<iso-timestamp>.json` before writing the new report.
+  - Vendor Lockfile location: next to the manifest file.
+  - Vendor Lockfile name is derived from the manifest filename (base name + `.lock.` + same extension):
+    - Manifest `gitvend.yml` -> lockfile `gitvend.lock.yml`
+    - Manifest `gitvend.yaml` -> lockfile `gitvend.lock.yaml`
+    - Manifest `.gitvend.yml` -> lockfile `.gitvend.lock.yml`
+    - Manifest `.gitvend.yaml` -> lockfile `.gitvend.lock.yaml`.
+  - The lockfile is also used to improve diagnostics:
+    - if managed paths are dirty, gitvend should log a warning that this indicates local edits to vendored content and recommend editing at the source repo instead.
 
 ### OQ-005 — Auto-commit behavior and safety
 - Status: Decided
 - Decision:
   - Auto-commit exists and only commits files changed/managed by gitvend.
-  - Auto-commit is configurable in the manifest and overridable by an environment variable.
-- Still open:
-  - The exact manifest field name and env var name (to be defined in `doc/manifest-spec.md` / `doc/cli-spec.md`).
-  - Behavior when the repository has unrelated dirty changes (fail vs proceed) needs to be specified.
+  - Auto-commit is enabled by default for `gitvend sync`.
+  - Default dirty-policy (when auto-commit is enabled): `allow-unrelated`.
+  - Optional dirty-policy: `allow-unrelated`.
+    - Uncommitted changes in unmanaged paths are allowed.
+    - Uncommitted changes in managed vendored paths are not allowed (gitvend must fail to prevent work loss).
 
 ### OQ-006 — Target Repo locking mechanism
 - Status: Decided
 - Decision:
   - Use a repo-level (Target Repo) lock.
   - The lock file is located at `<target-repo>/.gitvend/target-repo.lock.json`.
+  - `sync` and `check` both acquire the Target Repo lock.
   - The lock file is automatically added to `.gitignore`.
 
 ### OQ-007 — Mirror ID algorithm: slug vs stable hash
@@ -64,35 +73,38 @@ Status legend:
 ### OQ-008 — Manifest discovery: default filenames and precedence
 - Status: Decided
 - Decision:
-  - Default manifest filename precedence:
+  - Recognized manifest filenames (in precedence order):
     - `gitvend.yml`
     - `gitvend.yaml`
     - `.gitvend.yml`
     - `.gitvend.yaml`
+  - If more than one recognized manifest exists in the same directory, gitvend fails with a manifest error (no implicit winner).
 
 ### OQ-009 — Minimum supported Git version
 - Status: Decided
-- Decision: Minimum supported Git version is `2.20`.
+- Decision: Git `2.x.y` is supported (i.e., any Git v2 is acceptable for v1).
 
----
+### OQ-010 — Container image UX (CI-friendly)
+- Status: Decided
+- Decision:
+  - The container image must be usable as a CI image (e.g., GitLab CI) to run arbitrary shell scripts.
+  - Image entrypoint should be a shell (e.g., `bash`), not `gitvend`.
 
-## Follow-up questions (new)
+### OQ-011 — Exit code granularity
+- Status: Decided
+- Decision:
+  - Current exit-code granularity is sufficient.
+  - More detailed diagnostics belong in structured stderr/log messages (and the JSON report when enabled).
 
-### OQ-010 — Report filename/location and lifecycle
-- Status: Open
-- Question:
-  - What is the canonical report filename and where is it written by default?
-  - Is it always written, or only with a flag?
-  - Should `check` write a report too (even on success), or only on drift?
 
-### OQ-011 — Target Repo lock filename, format, and stale-lock recovery
+### OQ-012 — Target Repo lock filename, format, and stale-lock recovery
 - Status: Decided
 - Decision:
   - Filename: `<target-repo>/.gitvend/target-repo.lock.json`.
   - Format: JSON (timestamp, pid, manifest path).
   - Timeout/stale-lock policy to be defined in storage spec.
 
-### OQ-012 — Mirror id slug normalization and collision handling
+### OQ-013 — Mirror id slug normalization and collision handling
 - Status: Open
 - Question:
   - Define the exact normalization rules and allowed character set.

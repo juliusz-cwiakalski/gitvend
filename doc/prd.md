@@ -161,7 +161,7 @@ gitvend intentionally does **not** aim to:
 ## Final decisions
 
 - Mirror lock file: `${HOME}/.gitvend/mirrors/<mirror>.lock.json`
-- Vendor Lockfile name (determinism): `gitvend-lock.yml`
+- Vendor Lockfile: next to the manifest, named `<manifest-base>.lock.<ext>` (e.g., `gitvend.lock.yml`)
 
 ---
 

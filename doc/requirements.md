@@ -5,7 +5,7 @@ This document defines functional requirements (FR) and non-functional requiremen
 The scope is aligned with `doc/prd.md` and the current decisions:
 - Mirror base directory: `${HOME}/.gitvend/`
 - Per-mirror lock file: `${HOME}/.gitvend/mirrors/<mirror>.lock.json`
-- Vendor Lockfile name in Target Repos: `gitvend-lock.yml`
+- Vendor Lockfile: next to the manifest, named `<manifest-base>.lock.<ext>` (e.g., `gitvend.lock.yml`)
 - Manifests: YAML v1
 - Ref resolution: same-branch-first, fallback to per-source configured default branch (`main` by default; legacy repos may specify `master`)
   - Default is configured on Source Repo and can be overridden per Vendor Entry.
@@ -165,7 +165,8 @@ The scope is aligned with `doc/prd.md` and the current decisions:
 ### Outputs: determinism, reporting, provenance
 
 **FR-026 — Determinism lockfile**
-- gitvend MUST write a determinism lockfile named `gitvend-lock.yml` (Vendor Lockfile) into the Target Repo.
+- gitvend MUST write a determinism lockfile (Vendor Lockfile) next to the manifest.
+- The lockfile name MUST be derived from the manifest filename (base name + `.lock.` + same extension), e.g. `gitvend.yml` -> `gitvend.lock.yml`.
 - The lockfile MUST record resolved commit SHAs for each Source Repo/ref used during the run.
 
 **FR-027 — Lockfile semantics (CI)**
@@ -199,7 +200,7 @@ The scope is aligned with `doc/prd.md` and the current decisions:
   - resolve refs per policy
   - fetch mirrors (at most once per mirror per invocation)
   - vendor files/dirs into the Target Repo
-  - write/update `gitvend-lock.yml`
+  - write/update the vendor lockfile (next to the manifest)
   - write a JSON report
 
 **FR-031 — `check` behavior**
@@ -235,12 +236,16 @@ The scope is aligned with `doc/prd.md` and the current decisions:
 
 **FR-037 — Golden source overwrite semantics**
 - For any file/directory declared in the manifest, the source repository content MUST be treated as the golden source.
-- If local modifications exist for vendored outputs, gitvend MUST overwrite them during `sync` to match the resolved source revision.
+- If local modifications exist for vendored outputs, gitvend MUST NOT overwrite them when they are uncommitted; it must fail to prevent work loss.
+- If local modifications are already committed, a later `sync` may overwrite them (normal git history applies).
 
 **FR-038 — Automatic commit of vendored changes**
 - When `sync` modifies vendored outputs, gitvend MUST be able to automatically create a Git commit in the target repo.
 - Auto-commit MUST be configurable in the manifest and MUST be overridable by environment variable.
 - If enabled, gitvend MUST stage and commit only the vendored outputs it manages (not unrelated workspace changes).
+- Default dirty-policy for auto-commit: `allow-unrelated`.
+  - Uncommitted changes outside managed paths do not block auto-commit.
+  - Uncommitted changes inside managed paths MUST block the run (to prevent overwriting local work).
 - The commit message MUST include audit information, including:
   - source repository identifiers
   - resolved commit SHAs used
@@ -323,8 +328,8 @@ The scope is aligned with `doc/prd.md` and the current decisions:
 
 The requirements above are implementable, but the following details should be explicitly decided in later documents to remove remaining ambiguity:
 
-1. **Lockfile/report locations**: where `gitvend.lock` and `gitvend.report.json` live by default (repo root vs configurable path).
+1. **Lockfile/report locations**: Paths are decided in `doc/cli-spec.md` and `doc/open-questions-and-decisions.md`; remaining questions belong to `doc/output-artifacts.md` (field schema, lifecycle).
 2. **Inline provenance defaults**: default off vs default on (and which file types are eligible).
-3. **Git dependency**: minimal supported Git version (Decided: >= 2.20).
-4. **Auto-commit toggles**: whether automatic commits are always-on or configurable, and behavior when the repo has unrelated uncommitted changes.
+3. **Git dependency**: minimal supported Git version (Decided: Git v2).
+4. **Auto-commit toggles**: field/env naming (if any) and any additional policy knobs beyond the decided default dirty-policy (`allow-unrelated`).
 5. **Manifest discovery**: default manifest filenames and precedence if multiple are found.
