@@ -8,10 +8,10 @@ This plan translates our conversation into a complete, implementation-ready docu
 
 **gitvend** provides:
 - Local **bare Git mirrors** cached under `${HOME}/.gitvend/...` to save bandwidth and accelerate sync.
-- Safe **locking** for mirror updates and workspace sync operations.
-- **Selective vendoring** of files/folders from remote git repositories into a target repository based on a manifest.
-- **Branch-aware ref resolution**: prefer a source branch matching the current workspace branch (or a configured change branch); configurable fallbacks.
-- CI-friendly **determinism** via a lockfile (**`gitvend.lock`**) and drift detection via `gitvend check`.
+- Safe **locking** for mirror updates and Target Repo sync operations.
+- **Selective vendoring** of files/folders from remote git repositories into a Target Repo based on a manifest.
+- **Branch-aware ref resolution**: prefer a Source Repo branch matching the current Target Repo branch (or a configured change branch); configurable fallbacks.
+- CI-friendly **determinism** via a Vendor Lockfile (**`gitvend-lock.yml`**) and drift detection via `gitvend check`.
 - Clear provenance for vendored artifacts; policy to prevent edits of vendored files in the consumer repo.
 
 Non-goals:
@@ -61,10 +61,10 @@ Non-goals:
   - Mirror update locking
   - Manifest-driven selective file/folder sync
   - Ref resolution policies (same-branch, fixed ref, fallback)
-  - Deterministic SHA pinning for CI (lockfile)
+  - Deterministic SHA pinning for CI (Vendor Lockfile)
   - `sync` vs `check` behaviors
   - Provenance metadata insertion
-  - Workspace write atomicity
+  - Target Repo write atomicity
 - Non-functional requirements (NFR-001…)
   - Determinism, performance, portability assumptions
   - Security (no secret material in manifests)
@@ -140,7 +140,7 @@ Non-goals:
   4) default branch
 - CI mode:
   - resolve all sources to SHAs
-  - write/update lockfile
+  - write/update Vendor Lockfile
   - store report
 - Extraction mechanisms:
   - file: `git show <sha>:<path>`
@@ -155,7 +155,7 @@ Non-goals:
 - Mirror layout:
   - `${HOME}/.gitvend/mirrors/<id>.git` (bare)
   - `${HOME}/.gitvend/mirrors/<id>.meta.json`
-  - `${HOME}/.gitvend/mirrors/<id>.lock` (per-mirror update lock)
+  - `${HOME}/.gitvend/mirrors/<id>.lock.json` (per-mirror update lock)
 - URL→ID scheme (hash + optional slug)
 - Lock locations and formats
 - Lock timeout and stale-lock recovery policy
@@ -165,10 +165,10 @@ Non-goals:
 
 ---
 
-### Step 8 — Output artifacts (lockfile + report + provenance)
+### Step 8 — Output artifacts (Vendor Lockfile + report + provenance)
 
 **8.1 `doc/output-artifacts.md`**
-- `gitvend.lock` format
+- `gitvend-lock.yml` format
   - repo, ref policy, resolved SHA, timestamp
 - `gitvend.report.json` format
   - per-entry status, warnings, fallbacks, durations

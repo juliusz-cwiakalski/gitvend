@@ -13,14 +13,14 @@ gitvend v1 is considered “done” when:
    - update required mirrors safely (with cross-platform locks),
    - resolve refs deterministically using same-branch-first with configured fallback,
    - vendor files and directories using object-level extraction (file: `git show`, dir: `git archive --format=zip`),
-   - write/update `gitvend.lock`,
+   - write/update `gitvend-lock.yml` (Vendor Lockfile),
    - produce a JSON report,
    - optionally auto-commit managed changes with an audit-friendly commit message.
 
 2. A CI job can run `gitvend check` and:
    - detect drift between vendored outputs and the resolved sources,
    - exit non-zero on drift,
-   - avoid modifying workspace outputs.
+   - avoid modifying target repo outputs.
 
 3. The tool behaves reliably on Windows/macOS/Linux, including locking and directory extraction.
 
@@ -33,14 +33,14 @@ gitvend v1 is considered “done” when:
 ## Acceptance criteria
 
 ### AC-001 — Mirror cache initialization
-**Statement:** On first use of a source repo, gitvend creates a bare mirror under `${HOME}/.gitvend/mirrors/<mirror>.git` and can subsequently reuse it.
+**Statement:** On first use of a Source Repo, gitvend creates a bare mirror under `${HOME}/.gitvend/mirrors/<mirror>.git` and can subsequently reuse it.
 
 **Mapped requirements:** FR-001, FR-002, FR-003, FR-004, NFR-002
 
 ---
 
 ### AC-002 — Per-mirror locking is enforced and cross-platform
-**Statement:** Concurrent executions attempting to update the same mirror cannot corrupt it; one process waits/fails according to timeout policy, using `${HOME}/.gitvend/mirrors/<mirror>.lock`.
+**Statement:** Concurrent executions attempting to update the same mirror cannot corrupt it; one process waits/fails according to timeout policy, using `${HOME}/.gitvend/mirrors/<mirror>.lock.json`.
 
 **Mapped requirements:** FR-006, FR-007, FR-008, FR-009, NFR-004, NFR-009
 
@@ -89,7 +89,7 @@ gitvend v1 is considered “done” when:
 ---
 
 ### AC-009 — Ref resolution uses same-branch-first with fallback
-**Statement:** If the target repo is on branch `feature/x`, gitvend first attempts to use `feature/x` in the source; if missing, it applies the selected policy (fail or fallback to source default branch).
+**Statement:** If the target repo is on branch `feature/x`, gitvend first attempts to use `feature/x` in the Source Repo; if missing, it applies the selected policy (fail or fallback to source default branch).
 
 **Mapped requirements:** FR-016, FR-017, FR-018, FR-019, FR-020
 
@@ -103,14 +103,14 @@ gitvend v1 is considered “done” when:
 ---
 
 ### AC-011 — File vendoring uses object-level extraction
-**Statement:** For `file` entries, gitvend vendors content using `git show <sha>:<path>` from the resolved commit and writes it to the target path.
+**Statement:** For `file` entries, gitvend vendors content using `git show <sha>:<path>` from the resolved commit and writes it to the Target Path.
 
 **Mapped requirements:** FR-021, FR-024
 
 ---
 
 ### AC-012 — Directory vendoring is portable and does not require checkout
-**Statement:** For `dir` entries, gitvend vendors directories using `git archive --format=zip <sha> <path>` and unzips into the target path; no working-tree checkout is required.
+**Statement:** For `dir` entries, gitvend vendors directories using `git archive --format=zip <sha> <path>` and unzips into the Target Path; no working-tree checkout is required.
 
 **Mapped requirements:** FR-022, NFR-004
 
@@ -138,7 +138,7 @@ gitvend v1 is considered “done” when:
 ---
 
 ### AC-016 — Determinism lockfile written
-**Statement:** `gitvend sync` writes/updates `gitvend.lock` in the target repo, recording resolved commit SHAs for each source/ref used.
+**Statement:** `gitvend sync` writes/updates `gitvend-lock.yml` in the target repo, recording resolved commit SHAs for each Source Repo/ref used.
 
 **Mapped requirements:** FR-026, FR-027, NFR-001
 
@@ -159,7 +159,7 @@ gitvend v1 is considered “done” when:
 ---
 
 ### AC-019 — `check` detects drift and does not modify outputs
-**Statement:** `gitvend check` exits non-zero if vendored outputs differ from what the manifest and resolved refs dictate, and does not modify workspace outputs.
+**Statement:** `gitvend check` exits non-zero if vendored outputs differ from what the manifest and resolved refs dictate, and does not modify target repo outputs.
 
 **Mapped requirements:** FR-031, FR-027, NFR-001, NFR-003
 
@@ -187,7 +187,7 @@ gitvend v1 is considered “done” when:
 ---
 
 ### AC-023 — Auto-commit of managed changes
-**Statement:** When `sync` changes managed outputs, gitvend stages and commits only those managed paths, using a commit message that includes source repo identifiers and resolved SHAs.
+**Statement:** When `sync` changes managed outputs, gitvend stages and commits only those managed paths, using a commit message that includes Source Repo identifiers and resolved SHAs.
 
 **Mapped requirements:** FR-038
 

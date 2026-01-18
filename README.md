@@ -22,8 +22,8 @@ Common pain points:
 - Maintaining local **bare mirrors** of upstream repositories.
 - Using a manifest to **selectively vendor** specific files/folders into your repo.
 - Keeping the relevant cross-repo knowledge **in-repo** (committed outputs) so both humans and AI agents can use it.
-- Resolving refs in a **branch-aware** way (prefer same branch name as the current target repo; configurable fallback), while making fallback behavior explicit.
-- Producing **lock/report** artifacts so CI can enforce **determinism** and prevent drift.
+- Resolving refs in a **branch-aware** way (prefer same branch name as the current Target Repo branch; configurable fallback), while making fallback behavior explicit.
+- Producing **Vendor Lockfile/report** artifacts so CI can enforce **determinism** and prevent drift.
 
 Examples:
 - A web app vendors OpenAPI/JSON Schema contracts from backend service repositories.
@@ -37,11 +37,11 @@ Examples:
 - **Local bare mirror cache** under `${HOME}/.gitvend/mirrors/…` (configurable).
 - **Repository update locking** to prevent concurrent mirror corruption.
 - **Manifest-driven selective sync** of files and folders (recursive) from Git sources.
-- **Branch-aware ref resolution** (prefer a branch matching your current workspace branch; configurable fallbacks).
+- **Branch-aware ref resolution** (prefer a branch matching your current Target Repo branch; configurable fallbacks).
 - **Portable directory vendoring** via `git archive --format=zip` + unzip (no working tree required; avoids OS-specific `tar` quirks).
-- **Deterministic CI** via a lockfile with resolved commit SHAs.
+- **Deterministic CI** via a Vendor Lockfile (`gitvend-lock.yml`) with resolved commit SHAs.
 - **Drift detection** via `gitvend check`.
-- **Provenance** for vendored outputs (source repo/ref/SHA/path).
+- **Provenance** for vendored outputs (Source Repo/ref/SHA/path).
 
 ---
 
@@ -58,10 +58,10 @@ Examples:
 ## Concepts (quick)
 
 - **Mirror**: a local bare clone of a remote repository, updated via `git fetch`.
-- **Manifest**: a config file declaring what to vendor (sources → targets).
-- **Entry**: one vendoring rule (source repo + path + ref policy → target path).
-- **Lockfile**: a file recording resolved SHAs for deterministic runs.
-- **Report**: machine-readable summary of what was synced, including fallbacks/warnings.
+- **Manifest**: a config file declaring what to vendor (Source Repos → Target Paths).
+- **Vendor Entry**: one vendoring rule (Source Repo + path + ref policy → Target Path).
+- **Vendor Lockfile**: a file (`gitvend-lock.yml`) recording resolved SHAs for deterministic runs.
+- **Run Report**: machine-readable summary of what was synced, including fallbacks/warnings.
 
 ---
 
@@ -135,7 +135,7 @@ entries:
 ```
 
 Notes:
-- By default, gitvend attempts to resolve sources using the **current branch name** of the target repo. If the same branch exists in the source repo, gitvend uses it.
+- By default, gitvend attempts to resolve sources using the **current branch name** of the Target Repo. If the same branch exists in the Source Repo, gitvend uses it.
 - Fallback behavior is controlled by `ref.policy` (e.g., fallback to `main`, or fail if the branch is required).
 - `policy: same-branch-else-fail` is recommended when the change *must* include a matching branch in the source.
 - `policy: same-branch-else-default` is acceptable for optional dependencies but should still be visible in reports.
@@ -164,8 +164,8 @@ See `doc/storage-and-locking.md`.
 
 gitvend uses locking to ensure safety:
 
-- **Per-mirror lock** during mirror updates (`fetch`) to prevent corruption.
-- **Workspace lock** during sync to prevent concurrent writes to the same target paths.
+- **Per-mirror lock** during mirror updates (`fetch`) to prevent corruption (`.lock.json`).
+- **Target Repo lock** during sync to prevent concurrent writes to the same target paths.
 
 Lock timeout and stale-lock recovery behavior are specified in `doc/storage-and-locking.md`.
 
@@ -191,11 +191,11 @@ Full CLI contract: `doc/cli-spec.md`.
 
 A typical sync run produces:
 
-- **Lockfile** (name): `gitvend.lock`
-  - Records resolved commit SHAs per source/ref.
+- **Vendor Lockfile** (name): `gitvend-lock.yml`
+  - Records resolved commit SHAs per Source Repo/ref.
   - Enables deterministic CI re-runs.
 
-- **Report** (example name): `gitvend.report.json`
+- **Run Report** (example name): `gitvend.report.json`
   - Per-entry statuses, warnings, fallbacks used, timings.
 
 - **Provenance markers** in vendored files (optional but recommended)
@@ -219,7 +219,7 @@ gitvend sync --manifest gitvend.yml
 gitvend check --manifest gitvend.yml
 ```
 
-If `check` fails, the PR must run `sync` and commit the updated vendored content (and lockfile, if used).
+If `check` fails, the PR must run `sync` and commit the updated vendored content (and Vendor Lockfile, if used).
 
 ---
 
@@ -237,7 +237,7 @@ If `check` fails, the PR must run `sync` and commit the updated vendored content
 
 ### `check` fails with drift
 - Run `gitvend sync --manifest …` and commit the changed vendored files.
-- Inspect `gitvend.report.json` to see which source/ref changed.
+- Inspect `gitvend.report.json` to see which Source Repo/ref changed.
 
 ### Branch not found
 - If policy is `same-branch-else-fail`, create the same-named branch in the source repo.

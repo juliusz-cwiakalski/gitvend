@@ -33,8 +33,8 @@ Existing Git mechanisms do not fully address this need:
 
 gitvend must enable a workflow where:
 
-1. A target repository declares a **manifest** of external artifacts to vendor.
-2. gitvend obtains those artifacts from a **deterministically resolved source revision**, preferably matching the target repo’s current branch name (and otherwise using a configured default branch).
+1. A Target Repo declares a **manifest** of external artifacts to vendor.
+2. gitvend obtains those artifacts from a **deterministically resolved source revision**, preferably matching the Target Repo’s current branch name (and otherwise using a configured default branch).
 3. Vendored outputs are:
    - reproducible in CI,
    - reviewable in Git diffs,
@@ -81,7 +81,7 @@ gitvend must enable a workflow where:
 
 ### Use case C — Platform assembly / curated view
 - A platform repo vendors a curated set of artifacts from many repos (docs, schemas, templates).
-- A lockfile records the exact SHAs used, enabling reproducible CI and auditing.
+- A Vendor Lockfile records the exact SHAs used, enabling reproducible CI and auditing.
 
 ---
 
@@ -105,7 +105,7 @@ gitvend intentionally does **not** aim to:
   - same-branch-first (target branch name),
   - configurable fallback to a per-repo default branch (e.g., `main` by default; `master` for legacy repos),
   - and explicit failure modes.
-- **Deterministic CI** supported via lockfile and `gitvend check`.
+- **Deterministic CI** supported via Vendor Lockfile and `gitvend check`.
 - **Mirror cache** reduces repeated network usage.
 
 ### Measurable outcomes
@@ -143,7 +143,7 @@ gitvend intentionally does **not** aim to:
 - Mirror updates must be protected by a **per-repository lock**, allowing different repositories to update in parallel.
 - Default layout uses:
   - `${HOME}/.gitvend/mirrors/<mirror>.git` (bare mirror)
-  - `${HOME}/.gitvend/mirrors/<mirror>.lock` (mirror update lock)
+  - `${HOME}/.gitvend/mirrors/<mirror>.lock.json` (mirror update lock)
 - Locking must work reliably across Windows/macOS/Linux.
 - Lock metadata should support troubleshooting by recording:
   - lock acquisition timestamp
@@ -160,8 +160,8 @@ gitvend intentionally does **not** aim to:
 
 ## Final decisions
 
-- Mirror lock file: `${HOME}/.gitvend/mirrors/<mirror>.lock`
-- Repository lockfile name (determinism): `gitvend.lock`
+- Mirror lock file: `${HOME}/.gitvend/mirrors/<mirror>.lock.json`
+- Vendor Lockfile name (determinism): `gitvend-lock.yml`
 
 ---
 

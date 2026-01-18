@@ -10,7 +10,7 @@ A **Mirror** is a local, **bare** Git repository that acts as a cache for a remo
 
 - Stored under `${HOME}/.gitvend/mirrors/<id>.git` by default.
 - Updated via `git fetch` (typically `--prune` and optionally `--tags`).
-- Mirrors are protected by a **per-mirror lock** during updates to prevent corruption.
+- Mirrors are protected by a **per-mirror lock** during updates to prevent corruption (`.lock.json`).
 
 Purpose:
 - Reduce bandwidth usage and speed up repeated operations.
@@ -18,9 +18,9 @@ Purpose:
 
 ---
 
-## Source
+## Source Repo
 
-A **Source** is a logical reference to a Git repository declared in a manifest.
+A **Source Repo** is a logical reference to a Git repository declared in a manifest.
 
 Typically includes:
 - `name` (stable identifier within the manifest)
@@ -37,8 +37,8 @@ Purpose:
 A **Manifest** is a configuration file that declares what gitvend should vendor into the current repository.
 
 A manifest typically defines:
-- Sources (repositories)
-- Entries (vendoring rules)
+- Source Repos (repositories)
+- Vendor Entries (vendoring rules)
 - Settings (cache location overrides, behavior defaults)
 
 Purpose:
@@ -47,15 +47,15 @@ Purpose:
 
 ---
 
-## Entry
+## Vendor Entry
 
-An **Entry** is a single vendoring rule in a manifest.
+A **Vendor Entry** is a single vendoring rule in a manifest.
 
 An entry typically includes:
-- Source (which repository)
+- Source Repo (which repository)
 - Type (`file` or `dir`)
 - Source path (`from`)
-- Target path (`to`)
+- Target Path (`to`)
 - Ref Policy (how to resolve what commit to extract from)
 
 Purpose:
@@ -63,9 +63,9 @@ Purpose:
 
 ---
 
-## Target
+## Target Path
 
-A **Target** is the output location (path) inside the repository where the vendored content is written.
+A **Target Path** is the output location (path) inside the Target Repo where the vendored content is written.
 
 - For `file` entries: a single file path.
 - For `dir` entries: a directory path (content is extracted recursively).
@@ -75,12 +75,22 @@ Purpose:
 
 ---
 
+## Target Repo
+
+A **Target Repo** is the Git repository where vendored content is written (the "consumer" repo).
+
+Key attributes:
+- Contains the manifest.
+- Protected by a repo-level lock (`.gitvend/target-repo.lock.json`).
+
+---
+
 ## Ref Policy
 
 A **Ref Policy** defines how gitvend selects the source revision (commit) to vendor from.
 
 Common policies:
-- **same-branch-else-fail**: Use a source branch with the same name as the current target repo branch; fail if not found.
+- **same-branch-else-fail**: Use a source branch with the same name as the current Target Repo branch; fail if not found.
 - **same-branch-else-default**: Use same-name branch if it exists; otherwise fallback to a configured default branch.
 - **fixed-ref**: Use an explicitly configured branch, tag, or commit.
 
@@ -95,9 +105,9 @@ Purpose:
 
 ---
 
-## Lockfile
+## Vendor Lockfile
 
-A **Lockfile** is an output artifact that records the exact resolved commit SHAs used during a sync.
+A **Vendor Lockfile** (`gitvend-lock.yml`) is an output artifact that records the exact resolved commit SHAs used during a sync.
 
 The lockfile typically includes (per source/ref):
 - Repository URL
@@ -111,9 +121,9 @@ Purpose:
 
 ---
 
-## Report
+## Run Report
 
-A **Report** is a machine-readable summary of a gitvend run, typically produced as JSON.
+A **Run Report** is a machine-readable summary of a gitvend run, typically produced as JSON (e.g., `gitvend.report.json`).
 
 The report typically includes:
 - Per-entry status (synced/unchanged/failed)
@@ -125,4 +135,5 @@ Purpose:
 - Provide observability for CI and local runs.
 - Make fallback usage explicit.
 - Support troubleshooting and auditing.
+
 

@@ -4,11 +4,11 @@ This document defines functional requirements (FR) and non-functional requiremen
 
 The scope is aligned with `doc/prd.md` and the current decisions:
 - Mirror base directory: `${HOME}/.gitvend/`
-- Per-mirror lock file: `${HOME}/.gitvend/mirrors/<mirror>.lock`
-- Determinism lockfile name in target repos: `gitvend.lock`
+- Per-mirror lock file: `${HOME}/.gitvend/mirrors/<mirror>.lock.json`
+- Vendor Lockfile name in Target Repos: `gitvend-lock.yml`
 - Manifests: YAML v1
 - Ref resolution: same-branch-first, fallback to per-source configured default branch (`main` by default; legacy repos may specify `master`)
-  - Default is configured on Source and can be overridden per Entry.
+  - Default is configured on Source Repo and can be overridden per Vendor Entry.
 - Directory vendoring: `git archive --format=zip` + unzip
 - LFS: treated as pointer files (no implicit fetching)
 - Git must be present on `PATH`
@@ -42,11 +42,11 @@ The scope is aligned with `doc/prd.md` and the current decisions:
 - `sync` MUST fetch mirrors (at most once per mirror per invocation).
 - gitvend SHOULD store mirror update timestamps in mirror metadata to enable skipping redundant fetches within a single multi-manifest run.
 
-### Locking (mirrors and workspace)
+### Locking (mirrors and Target Repo)
 
 **FR-006 — Per-mirror update locking**
 - Mirror updates MUST be protected by a per-mirror lock file:
-  - `${HOME}/.gitvend/mirrors/<mirror>.lock`
+  - `${HOME}/.gitvend/mirrors/<mirror>.lock.json`
 - When the lock is held, concurrent updates of the same mirror MUST be prevented.
 
 **FR-007 — Lock metadata for troubleshooting**
@@ -63,11 +63,11 @@ The scope is aligned with `doc/prd.md` and the current decisions:
 - Updates to different mirrors SHOULD be allowed to proceed in parallel.
 - Locking MUST be scoped such that only the same `<mirror>` blocks itself.
 
-**FR-010 — Workspace write safety (repo-level lock)**
-- gitvend MUST prevent concurrent writes within the same target repository workspace that could race on output paths.
-- The mechanism MUST be a repo-level lock file created next to the manifest file being used.
-- The lock file MUST be added to the target repository `.gitignore` automatically (if possible).
-- The exact lock filename and lock metadata format MUST be defined in `doc/storage-and-locking.md`.
+**FR-010 — Target Repo write safety (repo-level lock)**
+- gitvend MUST prevent concurrent writes within the same Target Repo that could race on output paths.
+- The mechanism MUST be a repo-level lock file.
+- The lock file MUST be added to the Target Repo `.gitignore` automatically (if possible).
+- The exact lock filename and lock metadata format MUST be defined in `doc/storage-and-locking.md` (e.g. `.gitvend/target-repo.lock.json`).
 
 ### Manifest-driven vendoring
 
@@ -78,30 +78,30 @@ The scope is aligned with `doc/prd.md` and the current decisions:
 **FR-012 — Manifest model extensibility**
 - gitvend MUST use an internal manifest DTO/model that can be serialized/deserialized from additional formats in the future (e.g., JSON) without changing core behavior.
 
-**FR-013 — Sources**
-- The manifest MUST support declaring multiple **sources**, each including:
+**FR-013 — Source Repos**
+- The manifest MUST support declaring multiple **Source Repos**, each including:
   - a stable local name/id
   - a Git repository URL
   - a configured default branch name (optional; defaults to `main` when not specified)
 - The source default branch MAY be overridden per entry (see FR-018).
 
-**FR-014 — Entries**
-- The manifest MUST support multiple **entries**, each specifying:
+**FR-014 — Vendor Entries**
+- The manifest MUST support multiple **Vendor Entries**, each specifying:
   - entry id
   - source reference
   - entry type (`file` or `dir`)
-  - `from` path in source repo
-  - `to` path in target repo
+  - `from` path in Source Repo
+  - `to` path in Target Repo
   - ref policy (see below)
 - For developer convenience, gitvend SHOULD support a mode where `to` defaults to the same relative path as `from` (exact manifest rules defined in `doc/manifest-spec.md`).
 
 **FR-015 — Path validation**
-- gitvend MUST reject manifest entries that would write outside the target repository directory.
+- gitvend MUST reject manifest entries that would write outside the Target Repo directory.
 - Absolute paths and path traversal (e.g., `..`) MUST be disallowed for `to`.
 - `from` MUST be validated to prevent injection into Git commands and to remain within repository paths.
 
 **FR-015a — Target path base**
-- Relative target paths (`to`) MUST be interpreted relative to the **target repository root** (the Git root containing the `.git` directory), not the current working directory.
+- Relative target paths (`to`) MUST be interpreted relative to the **Target Repo root** (the Git root containing the `.git` directory), not the current working directory.
 
 ### Ref resolution policies
 
@@ -148,7 +148,7 @@ The scope is aligned with `doc/prd.md` and the current decisions:
 - If LFS is used in the source repository, vendored content MAY be LFS pointer files.
 
 **FR-024 — Atomic writes**
-- gitvend MUST ensure workspace writes are atomic and crash-safe:
+- gitvend MUST ensure Target Repo writes are atomic and crash-safe:
   - write to a temporary file/directory
   - then move/rename into place
 - Partial/incomplete output MUST NOT be left as the final target state.
@@ -165,8 +165,8 @@ The scope is aligned with `doc/prd.md` and the current decisions:
 ### Outputs: determinism, reporting, provenance
 
 **FR-026 — Determinism lockfile**
-- gitvend MUST write a determinism lockfile named `gitvend.lock` into the target repository.
-- The lockfile MUST record resolved commit SHAs for each source/ref used during the run.
+- gitvend MUST write a determinism lockfile named `gitvend-lock.yml` (Vendor Lockfile) into the Target Repo.
+- The lockfile MUST record resolved commit SHAs for each Source Repo/ref used during the run.
 
 **FR-027 — Lockfile semantics (CI)**
 - gitvend MUST support a deterministic CI workflow in which:
@@ -198,8 +198,8 @@ The scope is aligned with `doc/prd.md` and the current decisions:
   - read the manifest
   - resolve refs per policy
   - fetch mirrors (at most once per mirror per invocation)
-  - vendor files/dirs into the target repository
-  - write/update `gitvend.lock`
+  - vendor files/dirs into the Target Repo
+  - write/update `gitvend-lock.yml`
   - write a JSON report
 
 **FR-031 — `check` behavior**
